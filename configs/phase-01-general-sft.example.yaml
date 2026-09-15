@@ -1,7 +1,7 @@
 # Configuração de referência. Copiar para um arquivo local de execução e registrar
 # o valor final empregado no relatório do experimento.
 project:
-  name: llm-to-sql-pt
+  name: sqllm-speaker
   phase: general-sft
   seed: 42
 

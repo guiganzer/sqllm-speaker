@@ -1,5 +1,5 @@
 [project]
-name = "llm-to-sql-pt"
+name = "sqllm-speaker"
 version = "0.1.0"
 description = "Agente local de Text-to-SQL em português"
 requires-python = ">=3.11,<3.14"

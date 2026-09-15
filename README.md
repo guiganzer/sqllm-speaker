@@ -1,4 +1,4 @@
-# LLM para SQL em português
+# SQLLM Speaker
 
 Projeto para especializar um modelo aberto que converte perguntas em português em SQL seguro e fundamentado no schema fornecido.
 

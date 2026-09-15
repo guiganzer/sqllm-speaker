@@ -1,5 +1,5 @@
 project:
-  name: llm-to-sql-pt
+  name: sqllm-speaker
   phase: agentic-sft
   seed: 42
 model:
