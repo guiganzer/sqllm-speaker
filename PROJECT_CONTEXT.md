@@ -16,7 +16,18 @@ O projeto seguirá três etapas:
 2. **Especialização no schema próprio:** aplicar ajuste fino adicional em perguntas e SQL validados para o banco do usuário.
 3. **Schema em tempo de uso:** enviar ao modelo o schema atual a cada pergunta, evitando depender apenas do que foi memorizado no treinamento.
 
-O trabalho iniciado neste repositório é somente o planejamento da etapa 1.
+O trabalho iniciado neste repositório evoluiu para a base agentic e o planejamento da etapa 1.
+
+## Decisão agentic
+
+O projeto será um sistema agentic, não um único prompt que gera SQL. Um mesmo modelo local atua em papéis especializados, cada um com ferramentas e contexto mínimos. A política de segurança e as transições de estado são código determinístico, nunca decisões deixadas ao modelo.
+
+O baseline selecionado para avaliação é `Boakpe/Qwen3-4B-Thinking-2507-Text-to-SQL-Agent-FT`, modelo Apache-2.0 de 4B parâmetros especializado em PT-BR, tool use e Text-to-SQL. Ele é adequado como referência pela VRAM disponível. O modelo do projeto será um adapter próprio, treinado a partir de um modelo-base compatível e comparado contra esse baseline; não haverá dependência funcional do checkpoint externo.
+
+Fontes da decisão:
+
+- https://huggingface.co/Boakpe/Qwen3-4B-Thinking-2507-Text-to-SQL-Agent-FT
+- https://huggingface.co/datasets/Boakpe/pt-br-agentic-text-to-sql-distilled-trajectories
 
 ## Princípios inegociáveis
 
@@ -50,7 +61,7 @@ Resultado ou mensagem de impedimento
 - Memória: 32 GB.
 - Espaço livre inicial em `C:`: aproximadamente 806 GB.
 
-Implicação: o alvo local é ajuste fino QLoRA de modelo de código/instruções de até 7B parâmetros, em 4-bit e com batch pequeno. Treinar um LLM do zero está fora do escopo.
+Implicação: o alvo local é ajuste fino QLoRA em 4-bit. Para o fluxo agentic, 4B é o alvo operacional inicial porque deixa VRAM para contexto e reparos; 7B será experimento posterior. Treinar um LLM do zero está fora do escopo.
 
 ## Dados candidatos já pesquisados
 
@@ -66,8 +77,10 @@ Não combinar `b-mc2/sql-create-context` com `emdemor/sql-create-context-pt`, po
 
 - Repositório Git inicializado na branch `main`.
 - Estrutura de pastas, documentação e configuração-exemplo criadas.
-- Não há código de treinamento, dependências, datasets locais, tokens, modelos ou experimentos ainda.
-- Próxima atividade: transformar o plano da fase 1 em pipeline de obtenção, checagem e preparação dos dados.
+- A base determinística do runtime agentic foi criada em `src/llm_to_sql/agentic/`, com testes padrão do Python criados em `tests/`.
+- A execução dos testes está pendente: em 2026-09-14, `python` apontou para o atalho da Microsoft Store e não há interpretador disponível. Não instalar sem autorização explícita.
+- Não há dependências externas instaladas, datasets locais, tokens, modelos ou experimentos ainda.
+- Próxima atividade: implementar o pipeline de obtenção, checagem e preparação dos dados da fase 1; em paralelo, preservar a interface de ferramentas definida para o treinamento agentic posterior.
 
 ## Como retomar em outra máquina
 

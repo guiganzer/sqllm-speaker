@@ -1,0 +1,13 @@
+runtime:
+  max_repairs: 2
+  max_rows: 100
+  allowed_operations: [SELECT, WITH, EXPLAIN]
+  tools: [get_database_profile, get_table_schema, execute_readonly_sql]
+model:
+  baseline: Boakpe/Qwen3-4B-Thinking-2507-Text-to-SQL-Agent-FT
+  target_adapter_base: Qwen/Qwen3-4B-Thinking-2507
+  quantization: 4bit
+execution:
+  credential_mode: read_only
+  query_timeout_seconds: 15
+  expose_raw_database_errors: false

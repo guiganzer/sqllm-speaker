@@ -1,0 +1,18 @@
+project:
+  name: llm-to-sql-pt
+  phase: agentic-sft
+  seed: 42
+model:
+  base_model: Qwen/Qwen3-4B-Thinking-2507
+data:
+  source_dataset: Boakpe/pt-br-agentic-text-to-sql-distilled-trajectories
+  revision: TO_BE_PINNED
+  required_tools: [get_database_profile, get_table_schema, execute_readonly_sql]
+training:
+  method: qlora
+  max_sequence_length: 2048
+  per_device_train_batch_size: 1
+  gradient_accumulation_steps: 16
+  gradient_checkpointing: true
+  num_train_epochs: 2
+  learning_rate: 0.0001

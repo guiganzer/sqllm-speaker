@@ -15,8 +15,8 @@ data:
   max_sequence_length: 1024
 
 model:
-  # Candidato de até 7B; confirmar licença e uso de VRAM no preflight.
-  base_model: TO_BE_SELECTED
+  # Base de 4B escolhida para preservar VRAM no runtime agentic.
+  base_model: Qwen/Qwen3-4B-Thinking-2507
   load_in_4bit: true
   quantization: nf4
   compute_dtype: bfloat16
