@@ -54,4 +54,4 @@ uv run python scripts/evaluate_phase_01.py --run-name phase-01-base-eval --sampl
 uv run python scripts/evaluate_phase_01.py --run-name phase-01-general-e1-eval --adapter-path .\artifacts\runs\phase-01-general-e1-768f209d9ea8 --sample-size 512
 ```
 
-Os relatórios ficam em `artifacts/evaluations/<run-name>/report.json`; as previsões auditáveis ficam em `predictions.jsonl`. Compare parse, saída somente SQL, política read-only e referências ao schema. A perda do `Trainer` sozinha não aprova o modelo.
+Os relatórios ficam em `artifacts/evaluations/<run-name>/report.json`; as previsões auditáveis ficam em `predictions.jsonl`. O avaliador usa lotes de quatro por padrão para caber na RTX 4070 de 8 GiB. Compare parse, saída somente SQL, política read-only e referências ao schema. O relatório também informa *exact match* canônico como indicador suplementar, nunca como prova de equivalência semântica. O avaliador conserva `raw_output` e remove somente marcadores de protocolo Qwen (`<think>`/`</think>`) antes de validar SQL; prosa livre continua sendo reprovada. A perda do `Trainer` sozinha não aprova o modelo.

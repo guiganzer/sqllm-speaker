@@ -33,6 +33,27 @@ def _normalize_identifier(value: str) -> str:
     return re.sub(r"[\[\]`\"']", "", value).strip().lower()
 
 
+def normalize_model_output(output: str) -> str:
+    """Remove somente delimitadores de raciocínio do protocolo Qwen, nunca prosa livre."""
+
+    normalized = output.strip()
+    normalized = re.sub(r"^\s*<think>.*?</think>\s*", "", normalized, flags=re.IGNORECASE | re.DOTALL)
+    normalized = re.sub(r"^\s*</think>\s*", "", normalized, flags=re.IGNORECASE)
+    return normalized.strip()
+
+
+def canonical_sql(sql: str) -> str | None:
+    """Forma estável para exact match suplementar; não prova equivalência semântica."""
+
+    policy = ReadOnlySqlPolicy().validate(normalize_model_output(sql))
+    if not policy.allowed or policy.normalized_sql is None:
+        return None
+    try:
+        return parse_one(policy.normalized_sql).sql(pretty=False)
+    except ParseError:
+        return None
+
+
 def extract_schema_identifiers(ddl: str) -> tuple[set[str], set[str]]:
     """Extrai tabelas e colunas do DDL aceito, tolerando dialetos mistos."""
 
@@ -63,6 +84,9 @@ def assess_sql(sql: str, ddl: str) -> SqlAssessment:
         return SqlAssessment(False, False, True, False, False)
 
     tables, columns = extract_schema_identifiers(ddl)
+    # O dataset fonte usa aspas duplas também para literais textuais (dialeto SQLite permissivo).
+    # SQLGlot os trata como identificadores em alguns dialetos, o que criaria falsos negativos.
+    quoted_text_values = {_normalize_identifier(value) for value in re.findall(r'"([^\"]+)"', policy.normalized_sql)}
     cte_aliases = {_normalize_identifier(cte.alias_or_name) for cte in query.find_all(exp.CTE)}
     referenced_tables = {
         _normalize_identifier(table.name)
@@ -72,7 +96,7 @@ def assess_sql(sql: str, ddl: str) -> SqlAssessment:
     referenced_columns = {
         _normalize_identifier(column.name)
         for column in query.find_all(exp.Column)
-        if column.name and column.name != "*"
+        if column.name and column.name != "*" and _normalize_identifier(column.name) not in quoted_text_values
     }
     return SqlAssessment(
         parses=True,

@@ -79,13 +79,13 @@ Não combinar `b-mc2/sql-create-context` com `emdemor/sql-create-context-pt`, po
 - Estrutura de pastas, documentação e configuração-exemplo criadas.
 - A base determinística do runtime agentic foi criada em `src/llm_to_sql/agentic/`, com testes padrão do Python criados em `tests/`.
 - Projeto uv configurado com Python 3.11 fixado em `.python-version`, dependências em `.venv` e lockfile `uv.lock`.
-- Os 16 testes automatizados passam via `uv run python -m unittest discover -s tests -t . -v`.
+- Os 19 testes automatizados passam via `uv run python -m unittest discover -s tests -t . -v`.
 - O dataset da fase 1 foi preparado localmente: 78.577 linhas de origem, 78.389 aceitas, 70.551 em treino e 7.838 em validação. Foram rejeitadas 187 consultas que não fizeram parse e 1 exemplo acima do limite de caracteres.
 - A GPU passou no preflight PyTorch: RTX 4070 Laptop, CUDA 12.8, BF16 e 8 GiB de VRAM. Dependências de QLoRA/SFT foram adicionadas ao `.venv` e fixadas pelo `uv.lock`.
 - O smoke test QLoRA da fase 1 foi aprovado na GPU: 5 passos em 43,112 s, perda de treino 1,6972 e perda de validação 0,4041. O adapter local e o manifesto ignorado pelo Git estão em `artifacts/runs/phase-01-smoke-768f209d9ea8/`; o resumo versionado está em `docs/experiment-manifests/phase-01-smoke-2026-09-15.md`.
-- O treino completo da fase 1 agora possui checkpoints retomáveis, manifesto de execução iniciado e validação periódica fixa de 512 exemplos. Um controle real de um passo confirmou checkpoint, avaliação e manifesto final. O benchmark por geração mede parse, saída somente SQL, política e referências ao schema em uma amostra estratificada de schemas nunca vistos.
+- A fase 1 foi concluída: uma época completa em 70.550 exemplos, 4.410 passos e 10h15m. A perda final de validação foi 0,0468. O benchmark isolado de 512 schemas registrou 100% de parse, saída SQL e política de leitura; 98,05% de referências ao schema válidas; e 64,06% de *exact match* canônico. O modelo-base, nas mesmas condições, obteve 0% por produzir raciocínio em vez de SQL. Consulte `docs/experiment-manifests/phase-01-general-e1-2026-09-15.md`.
 - A calibração de 100 passos foi aprovada: 0,110 passo/s e 1,766 amostra/s. Para uma época completa, a estimativa é de aproximadamente 11h20; reservar uma janela de 12 horas. Consulte `docs/experiment-manifests/phase-01-calibration-2026-09-15.md`.
-- Próxima atividade: executar uma época completa a partir de um commit limpo, seguida pelo benchmark por geração do modelo-base e do adapter. O modelo-base está no cache local e a revisão foi fixada em `768f209d9ea81521153ed38c47d515654e938aea`.
+- Próxima atividade: preparar a fase 2 quando o usuário fornecer o schema privado e SQLs validados. O conjunto privado terá treino e avaliação separados; a amostra pública de 512 schemas continuará imutável como benchmark de regressão. O modelo-base está no cache local e a revisão foi fixada em `768f209d9ea81521153ed38c47d515654e938aea`.
 
 ## Como retomar em outra máquina
 

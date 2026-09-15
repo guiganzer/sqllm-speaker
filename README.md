@@ -28,7 +28,7 @@ Base agentic e pipeline da fase 1 implementados. O projeto usa Python 3.11, `uv`
 
 - Dataset geral preparado: 70.551 exemplos de treino e 7.838 de validação, isolados por schema.
 - Smoke test QLoRA aprovado; detalhes em [docs/experiment-manifests/phase-01-smoke-2026-09-15.md](docs/experiment-manifests/phase-01-smoke-2026-09-15.md).
-- Treino completo retomável e benchmark estrutural por geração estão disponíveis nos runbooks.
+- Fase 1 concluída: treino geral de uma época e benchmark em 512 schemas isolados. Consulte [o manifesto final](docs/experiment-manifests/phase-01-general-e1-2026-09-15.md).
 - A fonte de verdade do estado é [PROJECT_CONTEXT.md](PROJECT_CONTEXT.md).
 
 Para validar a base local:

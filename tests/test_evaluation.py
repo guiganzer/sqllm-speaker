@@ -1,6 +1,6 @@
 import unittest
 
-from llm_to_sql.evaluation import aggregate_assessments, assess_sql, deterministic_stratified_sample
+from llm_to_sql.evaluation import canonical_sql, aggregate_assessments, assess_sql, deterministic_stratified_sample, normalize_model_output
 
 
 DDL = "CREATE TABLE vendas (id INTEGER, cliente TEXT, valor REAL);"
@@ -46,3 +46,14 @@ class EvaluationTests(unittest.TestCase):
         metrics = aggregate_assessments(values)
         self.assertEqual(metrics["examples"], 2)
         self.assertEqual(metrics["parses_count"], 1)
+
+    def test_removes_only_qwen_thinking_protocol_markers(self) -> None:
+        self.assertEqual(normalize_model_output("</think>\nSELECT id FROM vendas"), "SELECT id FROM vendas")
+        self.assertEqual(normalize_model_output("Aqui está: SELECT id FROM vendas"), "Aqui está: SELECT id FROM vendas")
+
+    def test_accepts_double_quoted_text_value_used_by_source_dataset(self) -> None:
+        result = assess_sql('SELECT cliente FROM vendas WHERE cliente = "Maria Silva"', DDL)
+        self.assertTrue(result.schema_references_valid)
+
+    def test_canonical_sql_ignores_layout_not_query_structure(self) -> None:
+        self.assertEqual(canonical_sql("SELECT  id  FROM vendas"), canonical_sql("SELECT id FROM vendas"))

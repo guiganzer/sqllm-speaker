@@ -71,6 +71,6 @@ Não usar apenas *exact match*: consultas SQL semanticamente equivalentes podem 
 
 ## Estado e próxima execução autorizada
 
-O pipeline de aquisição, preparação, deduplicação e divisão por schema foi implementado e validado. O smoke test QLoRA foi aprovado; o treino possui checkpoints retomáveis e avaliação de perda em uma amostra fixa de validação.
+O pipeline de aquisição, preparação, deduplicação e divisão por schema foi implementado e validado. A execução de uma época foi concluída; o benchmark de 512 schemas isolados está registrado em `docs/experiment-manifests/phase-01-general-e1-2026-09-15.md`.
 
-Antes de executar uma época completa, rode a calibração de 100 passos definida em [phase-01-full-training.md](../runbooks/phase-01-full-training.md). Depois, execute uma época, avalie por geração o modelo-base e o adapter em uma amostra estratificada de 512 schemas não vistos e registre a comparação em um manifesto de experimento.
+A próxima fase é a especialização no schema privado. Preserve o benchmark público e execute-o novamente após o ajuste privado para detectar regressões de capacidade geral.
