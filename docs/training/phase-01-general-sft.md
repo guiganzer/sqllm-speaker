@@ -69,6 +69,8 @@ Consulte [configs/phase-01-general-sft.example.yaml](../../configs/phase-01-gene
 
 Não usar apenas *exact match*: consultas SQL semanticamente equivalentes podem ter texto diferente.
 
-## Próxima implementação autorizada
+## Estado e próxima execução autorizada
 
-Criar o pipeline de aquisição e preparação do `emdemor/sql-create-context-pt`, com manifesto e testes de qualidade. Não baixar modelos ou iniciar treinamento até concluir e revisar o relatório de dados processados.
+O pipeline de aquisição, preparação, deduplicação e divisão por schema foi implementado e validado. O smoke test QLoRA foi aprovado; o treino possui checkpoints retomáveis e avaliação de perda em uma amostra fixa de validação.
+
+Antes de executar uma época completa, rode a calibração de 100 passos definida em [phase-01-full-training.md](../runbooks/phase-01-full-training.md). Depois, execute uma época, avalie por geração o modelo-base e o adapter em uma amostra estratificada de 512 schemas não vistos e registre a comparação em um manifesto de experimento.

@@ -24,4 +24,15 @@ Antes de alterar código ou dados, leia nesta ordem:
 
 ## Estado
 
-Base agentic — implementada, com suíte de testes criada. A execução dos testes aguarda um Python 3.11+ instalado. Ainda não há dados baixados, dependências instaladas ou treinamento executado.
+Base agentic e pipeline da fase 1 implementados. O projeto usa Python 3.11, `uv`, ambiente `.venv` e uma RTX 4070 Laptop de 8 GiB para QLoRA em 4-bit.
+
+- Dataset geral preparado: 70.551 exemplos de treino e 7.838 de validação, isolados por schema.
+- Smoke test QLoRA aprovado; detalhes em [docs/experiment-manifests/phase-01-smoke-2026-09-15.md](docs/experiment-manifests/phase-01-smoke-2026-09-15.md).
+- Treino completo retomável e benchmark estrutural por geração estão disponíveis nos runbooks.
+- A fonte de verdade do estado é [PROJECT_CONTEXT.md](PROJECT_CONTEXT.md).
+
+Para validar a base local:
+
+```powershell
+uv run python -m unittest discover -s tests -t . -v
+```

@@ -86,13 +86,13 @@ def tokenize_dataset(
     return accepted
 
 
-def load_jsonl(path: Path, requested_samples: int | None, candidate_factor: int) -> Dataset:
+def load_jsonl(path: Path, requested_samples: int | None, candidate_factor: int, seed: int) -> Dataset:
     dataset = load_dataset("json", data_files=str(path), split="train")
     if not isinstance(dataset, Dataset):
         raise TypeError("O JSONL deve carregar como Dataset")
     if requested_samples is not None:
         candidate_count = min(requested_samples * candidate_factor, len(dataset))
-        dataset = dataset.select(range(candidate_count))
+        dataset = dataset.shuffle(seed=seed).select(range(candidate_count))
     return dataset
 
 
@@ -104,7 +104,12 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument("--validation-file", type=Path, default=Path("data/processed/phase-01/ee31747c93bd/validation.jsonl"))
     parser.add_argument("--max-sequence-length", type=int, default=1024)
     parser.add_argument("--max-train-samples", type=int)
-    parser.add_argument("--max-validation-samples", type=int)
+    parser.add_argument(
+        "--max-validation-samples",
+        type=int,
+        default=512,
+        help="Amostra fixa de validação para a perda periódica.",
+    )
     parser.add_argument(
         "--candidate-factor",
         type=int,
@@ -112,8 +117,14 @@ def parse_arguments() -> argparse.Namespace:
         help="Quantidade de candidatos por exemplo solicitado; exemplos longos são descartados sem truncamento.",
     )
     parser.add_argument("--max-steps", type=int, default=-1)
-    parser.add_argument("--epochs", type=float, default=2.0)
+    parser.add_argument("--epochs", type=float, default=1.0)
     parser.add_argument("--run-name", default="phase-01")
+    parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--logging-steps", type=int, default=10)
+    parser.add_argument("--eval-steps", type=int, help="Padrão: fim do smoke test ou 500 passos no treino completo.")
+    parser.add_argument("--save-steps", type=int, help="Padrão: mesmo valor de --eval-steps.")
+    parser.add_argument("--save-total-limit", type=int, default=3)
+    parser.add_argument("--resume-from-checkpoint", type=Path)
     return parser.parse_args()
 
 
@@ -127,6 +138,25 @@ def main() -> None:
     label = f"{arguments.run_name}-{model_revision[:12]}"
     logger = configure_logger(root / "artifacts" / "logs" / f"{label}.log")
     logger.info("Modelo %s revisao %s", arguments.model_id, model_revision)
+    output_dir = root / "artifacts" / "runs" / label
+    output_dir.mkdir(parents=True, exist_ok=True)
+    running_manifest_path = output_dir / "running-manifest.json"
+    running_manifest_path.write_text(
+        json.dumps(
+            {
+                "started_at_utc": datetime.now(UTC).isoformat(),
+                "status": "running",
+                "model_id": arguments.model_id,
+                "model_revision": model_revision,
+                "arguments": vars(arguments),
+            },
+            indent=2,
+            sort_keys=True,
+            default=str,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
 
     tokenizer = AutoTokenizer.from_pretrained(arguments.model_id, revision=model_revision)
     if tokenizer.pad_token_id is None:
@@ -134,13 +164,13 @@ def main() -> None:
     tokenizer.padding_side = "right"
 
     train = tokenize_dataset(
-        load_jsonl(arguments.train_file, arguments.max_train_samples, arguments.candidate_factor),
+        load_jsonl(arguments.train_file, arguments.max_train_samples, arguments.candidate_factor, arguments.seed),
         tokenizer,
         arguments.max_sequence_length,
         arguments.max_train_samples,
     )
     validation = tokenize_dataset(
-        load_jsonl(arguments.validation_file, arguments.max_validation_samples, arguments.candidate_factor),
+        load_jsonl(arguments.validation_file, arguments.max_validation_samples, arguments.candidate_factor, arguments.seed),
         tokenizer,
         arguments.max_sequence_length,
         arguments.max_validation_samples,
@@ -163,7 +193,7 @@ def main() -> None:
         arguments.model_id,
         revision=model_revision,
         quantization_config=quantization,
-        torch_dtype=torch.bfloat16,
+        dtype=torch.bfloat16,
         device_map={"": 0},
     )
     model.config.use_cache = False
@@ -179,7 +209,8 @@ def main() -> None:
     model = get_peft_model(model, adapter)
     model.print_trainable_parameters()
 
-    output_dir = root / "artifacts" / "runs" / label
+    eval_steps = arguments.eval_steps or (arguments.max_steps if arguments.max_steps > 0 else 500)
+    save_steps = arguments.save_steps or eval_steps
     training_arguments = TrainingArguments(
         output_dir=str(output_dir),
         run_name=label,
@@ -193,17 +224,17 @@ def main() -> None:
         # Transformers 5 representa uma razão de warmup como fração em warmup_steps.
         warmup_steps=0.03,
         logging_strategy="steps",
-        logging_steps=1,
+        logging_steps=arguments.logging_steps,
         eval_strategy="steps",
-        eval_steps=5,
+        eval_steps=eval_steps,
         save_strategy="steps",
-        save_steps=5,
-        save_total_limit=1,
+        save_steps=save_steps,
+        save_total_limit=arguments.save_total_limit,
         bf16=True,
         optim="paged_adamw_8bit",
         report_to=[],
         remove_unused_columns=False,
-        seed=42,
+        seed=arguments.seed,
     )
     trainer = Trainer(
         model=model,
@@ -213,10 +244,11 @@ def main() -> None:
         data_collator=CausalDataCollator(tokenizer.pad_token_id),
         processing_class=tokenizer,
     )
-    train_metrics = trainer.train().metrics
+    train_metrics = trainer.train(resume_from_checkpoint=str(arguments.resume_from_checkpoint) if arguments.resume_from_checkpoint else None).metrics
     evaluation_metrics = trainer.evaluate()
     trainer.save_model()
     manifest = {
+        "status": "completed",
         "finished_at_utc": datetime.now(UTC).isoformat(),
         "model_id": arguments.model_id,
         "model_revision": model_revision,
@@ -224,10 +256,15 @@ def main() -> None:
         "validation_file": str(arguments.validation_file),
         "max_sequence_length": arguments.max_sequence_length,
         "max_steps": arguments.max_steps,
+        "train_examples": len(train),
+        "validation_examples": len(validation),
+        "arguments": vars(arguments),
         "metrics": {"train": train_metrics, "evaluation": evaluation_metrics},
     }
-    output_dir.mkdir(parents=True, exist_ok=True)
-    (output_dir / "run-manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True, default=str) + "\n", encoding="utf-8")
+    running_manifest_path.write_text(
+        json.dumps(manifest, indent=2, sort_keys=True, default=str) + "\n", encoding="utf-8"
+    )
+    running_manifest_path.replace(output_dir / "run-manifest.json")
     logger.info("Treino concluido. Artefato: %s", output_dir)
 
 
