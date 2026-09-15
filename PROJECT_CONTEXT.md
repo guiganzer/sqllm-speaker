@@ -67,7 +67,7 @@ Implicação: o alvo local é ajuste fino QLoRA em 4-bit. Para o fluxo agentic, 
 
 | Dataset | Papel | Observação |
 |---|---|---|
-| `emdemor/sql-create-context-pt` | Fonte principal da etapa 1 | 78.577 pares em português: `pergunta`, `contexto` (DDL) e `resposta` (SQL). Licença CC-BY-4.0. |
+| `emdemor/sql-create-context-pt` | Fonte principal da etapa 1 | Revisão `ee31747c93bdf859c57468ec1f28c4360cc84b1b` adquirida: 78.389 pares aceitos após validação. Licença CC-BY-4.0. |
 | `Boakpe/bird-sql-portuguese` | Complemento complexo | Tradução PT de BIRD, com perguntas, evidências e SQL. Requer obter e associar os schemas originais do BIRD; o visualizador do Hub apresenta erro de configuração. |
 | `Boakpe/pt-br-agentic-text-to-sql-distilled-trajectories` | Etapa posterior opcional | 7.442 trajetórias PT-BR de uso de ferramentas. Não misturar no primeiro treino de resposta SQL direta. |
 
@@ -78,9 +78,11 @@ Não combinar `b-mc2/sql-create-context` com `emdemor/sql-create-context-pt`, po
 - Repositório Git inicializado na branch `main`.
 - Estrutura de pastas, documentação e configuração-exemplo criadas.
 - A base determinística do runtime agentic foi criada em `src/llm_to_sql/agentic/`, com testes padrão do Python criados em `tests/`.
-- A execução dos testes está pendente: em 2026-09-14, `python` apontou para o atalho da Microsoft Store e não há interpretador disponível. Não instalar sem autorização explícita.
-- Não há dependências externas instaladas, datasets locais, tokens, modelos ou experimentos ainda.
-- Próxima atividade: implementar o pipeline de obtenção, checagem e preparação dos dados da fase 1; em paralelo, preservar a interface de ferramentas definida para o treinamento agentic posterior.
+- Projeto uv configurado com Python 3.11 fixado em `.python-version`, dependências em `.venv` e lockfile `uv.lock`.
+- Os 10 testes automatizados passam via `uv run python -m unittest discover -s tests -t . -v`.
+- O dataset da fase 1 foi preparado localmente: 78.577 linhas de origem, 78.389 aceitas, 70.551 em treino e 7.838 em validação. Foram rejeitadas 187 consultas que não fizeram parse e 1 exemplo acima do limite de caracteres.
+- A GPU passou no preflight PyTorch: RTX 4070 Laptop, CUDA 12.8, BF16 e 8 GiB de VRAM. Dependências de QLoRA/SFT foram adicionadas ao `.venv` e fixadas pelo `uv.lock`.
+- Próxima atividade: validar o backend bitsandbytes e então implementar o script de treino QLoRA para a fase 1; o download do modelo-base só ocorrerá pelo script com a revisão fixada.
 
 ## Como retomar em outra máquina
 

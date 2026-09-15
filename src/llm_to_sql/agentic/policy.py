@@ -16,14 +16,14 @@ class SqlPolicyResult:
 class ReadOnlySqlPolicy:
     """Validação lexical defensiva; não substitui permissões read-only no banco."""
 
-    _allowed_roots = re.compile(r"^(SELECT|WITH|EXPLAIN)\\b", re.IGNORECASE)
+    _allowed_roots = re.compile(r"^(SELECT|WITH|EXPLAIN)\b", re.IGNORECASE)
     _forbidden = re.compile(
-        r"\\b(INSERT|UPDATE|DELETE|MERGE|UPSERT|REPLACE|DROP|ALTER|CREATE|TRUNCATE|"
-        r"GRANT|REVOKE|COMMIT|ROLLBACK|BEGIN|VACUUM|ATTACH|DETACH|PRAGMA|CALL|EXEC)\\b",
+        r"\b(INSERT|UPDATE|DELETE|MERGE|UPSERT|REPLACE|DROP|ALTER|CREATE|TRUNCATE|"
+        r"GRANT|REVOKE|COMMIT|ROLLBACK|BEGIN|VACUUM|ATTACH|DETACH|PRAGMA|CALL|EXEC)\b",
         re.IGNORECASE,
     )
-    _block_comments = re.compile(r"/\\*.*?\\*/", re.DOTALL)
-    _line_comments = re.compile(r"--[^\\r\\n]*")
+    _block_comments = re.compile(r"/\*.*?\*/", re.DOTALL)
+    _line_comments = re.compile(r"--[^\r\n]*")
 
     def validate(self, sql: str) -> SqlPolicyResult:
         if not isinstance(sql, str) or not sql.strip():

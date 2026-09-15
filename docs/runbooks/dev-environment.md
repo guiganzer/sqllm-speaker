@@ -2,7 +2,7 @@
 
 ## Pré-requisito
 
-Instalar Python **3.11 ou superior** e garantir que `python --version` funcione no terminal. A base usa `enum.StrEnum`, disponível a partir do Python 3.11.
+Instalar Python **3.11** e garantir que `python --version` funcione no terminal. O projeto aceita Python 3.11–3.13, mas fixa 3.11 para compatibilidade previsível com treinamento em GPU. A base usa `enum.StrEnum`, disponível a partir do Python 3.11.
 
 Em 2026-09-14 não havia Python executável na máquina: o comando `python` resolveu para o atalho da Microsoft Store. Nenhuma instalação foi feita automaticamente.
 

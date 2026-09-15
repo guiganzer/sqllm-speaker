@@ -7,9 +7,9 @@ project:
 
 data:
   primary_dataset: emdemor/sql-create-context-pt
-  revision: TO_BE_PINNED
-  raw_dir: data/raw/sql-create-context-pt
-  processed_dir: data/processed/phase-01
+  revision: ee31747c93bdf859c57468ec1f28c4360cc84b1b
+  raw_dir: data/raw/emdemor__sql-create-context-pt/ee31747c93bd
+  processed_dir: data/processed/phase-01/ee31747c93bd
   validation_strategy: group_by_normalized_schema
   validation_fraction: 0.10
   max_sequence_length: 1024

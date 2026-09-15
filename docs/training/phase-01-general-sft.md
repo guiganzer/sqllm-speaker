@@ -41,7 +41,7 @@ Não traduzir nomes de tabelas, colunas, valores literais ou dialeto SQL. Apenas
 1. **Manifesto de origem** — registrar ID, revisão imutável, licença, data de obtenção, campos e checksum dos arquivos recebidos.
 2. **Aquisição** — baixar para `data/raw/` sem versionar os arquivos no Git.
 3. **Normalização** — remover espaços redundantes, padronizar quebras de linha e manter o SQL sem reescrita semântica.
-4. **Filtragem estrutural** — excluir registros sem pergunta, DDL ou SQL; rejeitar SQL que não faça parse e exemplos acima do limite de tokens definido.
+4. **Filtragem estrutural** — excluir registros sem pergunta, DDL ou SQL; rejeitar SQL que não faça parse e exemplos acima do limite conservador de 16.000 caracteres. A filtragem por tokens do tokenizer escolhido ocorrerá antes do treino.
 5. **Deduplicação** — usar hash de `DDL + pergunta + SQL` normalizados e manter relatório de linhas removidas.
 6. **Divisão de dados** — separar treino/validação por grupo de schema, nunca por linha aleatória. Um mesmo DDL não deve aparecer nos dois conjuntos.
 7. **Serialização** — gerar JSONL de treino e validação no formato canônico e um relatório de estatísticas.

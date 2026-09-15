@@ -21,3 +21,7 @@ class ReadOnlySqlPolicyTests(unittest.TestCase):
     def test_rejects_write_hidden_after_cte(self) -> None:
         sql = "WITH removed AS (DELETE FROM clientes RETURNING id) SELECT * FROM removed"
         self.assertFalse(self.policy.validate(sql).allowed)
+
+    def test_allows_select_with_comment(self) -> None:
+        result = self.policy.validate("-- consulta permitida\nSELECT id FROM clientes")
+        self.assertTrue(result.allowed)
