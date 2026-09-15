@@ -1,0 +1,54 @@
+# Configuração de referência. Copiar para um arquivo local de execução e registrar
+# o valor final empregado no relatório do experimento.
+project:
+  name: llm-to-sql-pt
+  phase: general-sft
+  seed: 42
+
+data:
+  primary_dataset: emdemor/sql-create-context-pt
+  revision: TO_BE_PINNED
+  raw_dir: data/raw/sql-create-context-pt
+  processed_dir: data/processed/phase-01
+  validation_strategy: group_by_normalized_schema
+  validation_fraction: 0.10
+  max_sequence_length: 1024
+
+model:
+  # Candidato de até 7B; confirmar licença e uso de VRAM no preflight.
+  base_model: TO_BE_SELECTED
+  load_in_4bit: true
+  quantization: nf4
+  compute_dtype: bfloat16
+
+adapter:
+  method: qlora
+  rank: 16
+  alpha: 32
+  dropout: 0.05
+
+training:
+  per_device_train_batch_size: 1
+  gradient_accumulation_steps: 16
+  gradient_checkpointing: true
+  learning_rate: 0.0002
+  num_train_epochs: 2
+  warmup_ratio: 0.03
+  logging_steps: 10
+  save_strategy: steps
+  save_steps: 250
+  evaluation_strategy: steps
+  eval_steps: 250
+
+safety:
+  target_sql_operations:
+    - SELECT
+    - WITH
+    - EXPLAIN
+  disallowed_sql_operations:
+    - INSERT
+    - UPDATE
+    - DELETE
+    - DROP
+    - ALTER
+    - CREATE
