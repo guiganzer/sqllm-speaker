@@ -17,6 +17,7 @@ data:
 model:
   # Base de 4B escolhida para preservar VRAM no runtime agentic.
   base_model: Qwen/Qwen3-4B-Thinking-2507
+  revision: 768f209d9ea81521153ed38c47d515654e938aea
   load_in_4bit: true
   quantization: nf4
   compute_dtype: bfloat16
@@ -33,7 +34,8 @@ training:
   gradient_checkpointing: true
   learning_rate: 0.0002
   num_train_epochs: 2
-  warmup_ratio: 0.03
+  # Na API instalada, frações representam a proporção do total de passos.
+  warmup_steps: 0.03
   logging_steps: 10
   save_strategy: steps
   save_steps: 250
