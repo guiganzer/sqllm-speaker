@@ -18,7 +18,7 @@ Antes do treino longo, execute 100 passos em 2.048 exemplos e registre a taxa ob
 uv run python scripts/train_phase_01.py --run-name phase-01-calibration --max-train-samples 2048 --max-validation-samples 128 --max-steps 100 --eval-steps 100 --save-steps 100
 ```
 
-Pelo smoke test, uma época inteira pode levar aproximadamente 10 a 12 horas de computação; a calibração substitui essa estimativa por uma medida local. Não iniciar o treino completo se esse período não couber na janela disponível.
+A calibração foi concluída em 15 de setembro de 2026: 100 passos em 906,076 s (`0,110` passo/s), com `1,766` amostra/s. Para 70.551 exemplos, batch 1 e acumulação 16, uma época equivale a aproximadamente 4.410 passos. A projeção é de cerca de **11h20** incluindo as avaliações; reserve 12 horas para absorver checkpoints e variação do Windows. O manifesto está em `docs/experiment-manifests/phase-01-calibration-2026-09-15.md`.
 
 ## Treino completo recomendado
 
