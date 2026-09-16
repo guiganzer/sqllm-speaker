@@ -54,6 +54,10 @@ Isso confirma que a prioridade não é mais parse: é estrutura semântica, espe
 
 A sessão modelada passa a usar contexto enriquecido por padrão e pode gerar de um a cinco candidatos por beam search determinístico. Um ranker explícito pontua sinais da pergunta, como `COUNT`, `SUM`, `AVG`, `GROUP BY`, direção da ordenação, granularidade mensal e `LIMIT`. Política de leitura, escopo e reparo limitado continuam obrigatórios.
 
+## Smoke concluído
+
+O smoke de 16 de setembro de 2026 foi aprovado: 2 passos, 64 exemplos de treino, 32 de validação, perda de treino 0,153642 e perda de validação 0,287430. Não houve OOM, descarte ou perda não finita. O manifesto está em docs/experiment-manifests/phase-03-pagila-v3-smoke-2026-09-16.md.
+
 ## Treino
 
 O smoke continua o adapter v2 e não baixa novamente o modelo se o cache local estiver íntegro:
