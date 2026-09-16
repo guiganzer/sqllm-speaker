@@ -16,6 +16,16 @@ from .policy import ReadOnlySqlPolicy
 
 _IDENTIFIER = re.compile(r"^[a-z_][a-z0-9_]*$")
 
+# Somente colunas públicas, categóricas e estáveis do Pagila. Nunca ampliar esta
+# lista automaticamente a partir de um banco do usuário.
+_SAFE_VALUE_HINTS: dict[str, tuple[str, ...]] = {
+    "film": ("rating", "special_features"),
+    "category": ("name",),
+    "language": ("name",),
+    "customer": ("active", "store_id"),
+    "inventory": ("store_id",),
+}
+
 
 @dataclass(frozen=True)
 class SqlExecution:
@@ -48,6 +58,8 @@ class PagilaAgentTools:
         self.role = role
         self.statement_timeout_ms = statement_timeout_ms
         self.policy = ReadOnlySqlPolicy()
+        self._schema_cache: dict[str, str] = {}
+        self._enriched_schema_cache: dict[str, str] = {}
 
     def get_database_profile(self) -> dict[str, Any]:
         rows = self._run_tsv(
@@ -73,6 +85,8 @@ class PagilaAgentTools:
     def get_table_schema(self, table_name: str) -> str:
         if not _IDENTIFIER.fullmatch(table_name):
             raise ValueError("Nome de tabela inválido.")
+        if table_name in self._schema_cache:
+            return self._schema_cache[table_name]
         query = (
             "SELECT column_name, data_type, is_nullable, COALESCE(column_default, '') "
             "FROM information_schema.columns "
@@ -90,7 +104,48 @@ class PagilaAgentTools:
             if default:
                 definition += f" DEFAULT {default}"
             definitions.append(definition)
-        return "CREATE TABLE public." + table_name + " (\n  " + ",\n  ".join(definitions) + "\n);"
+        schema = "CREATE TABLE public." + table_name + " (\n  " + ",\n  ".join(definitions) + "\n);"
+        self._schema_cache[table_name] = schema
+        return schema
+
+    def get_enriched_table_schema(self, table_name: str) -> str:
+        """Retorna DDL básico mais cardinalidade, PK/FK e hints públicos seguros."""
+
+        if not _IDENTIFIER.fullmatch(table_name):
+            raise ValueError("Nome de tabela inválido.")
+        if table_name in self._enriched_schema_cache:
+            return self._enriched_schema_cache[table_name]
+        base = self.get_table_schema(table_name)
+        constraints = self._run_tsv(
+            "SELECT tc.constraint_type, kcu.column_name, "
+            "COALESCE(ccu.table_name, ''), COALESCE(ccu.column_name, '') "
+            "FROM information_schema.table_constraints AS tc "
+            "JOIN information_schema.key_column_usage AS kcu "
+            "ON tc.constraint_name = kcu.constraint_name AND tc.table_schema = kcu.table_schema "
+            "LEFT JOIN information_schema.constraint_column_usage AS ccu "
+            "ON tc.constraint_name = ccu.constraint_name AND tc.table_schema = ccu.table_schema "
+            "WHERE tc.table_schema = 'public' AND tc.table_name = '" + table_name + "' "
+            "AND tc.constraint_type IN ('PRIMARY KEY', 'FOREIGN KEY') "
+            "ORDER BY tc.constraint_type, kcu.ordinal_position"
+        )
+        count_rows = self._run_tsv(f'SELECT COUNT(*) FROM public."{table_name}"')
+        annotations = [f"-- cardinality: {count_rows[0][0]} rows"]
+        for kind, column, target_table, target_column in constraints:
+            if kind == "PRIMARY KEY":
+                annotations.append(f"-- primary key: {table_name}.{column}")
+            else:
+                annotations.append(f"-- foreign key: {table_name}.{column} -> {target_table}.{target_column}")
+        for column in _SAFE_VALUE_HINTS.get(table_name, ()):
+            values = self._run_tsv(
+                f'SELECT DISTINCT "{column}"::text FROM public."{table_name}" '
+                f'WHERE "{column}" IS NOT NULL ORDER BY 1 LIMIT 25'
+            )
+            rendered = ", ".join(row[0] for row in values)
+            if rendered:
+                annotations.append(f"-- values {table_name}.{column}: {rendered}")
+        enriched = base + "\n" + "\n".join(annotations)
+        self._enriched_schema_cache[table_name] = enriched
+        return enriched
 
     def execute_readonly_sql(self, sql: str, *, max_rows: int = 100) -> SqlExecution:
         if not 1 <= max_rows <= 1_000:

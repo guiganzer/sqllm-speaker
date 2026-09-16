@@ -43,6 +43,19 @@ class PhaseTwoCorpusTests(unittest.TestCase):
         self.assertTrue(v2_validation <= families)
         self.assertTrue(families - v2_validation)
 
+    def test_v3_is_large_keeps_replay_and_has_family_holdout(self) -> None:
+        v2 = build_specs("v2")
+        v3 = build_specs("v3")
+        self.assertGreaterEqual(len(v3), 2000)
+        self.assertEqual(
+            {spec.identifier for spec in v2},
+            {spec.identifier for spec in v3[: len(v2)]},
+        )
+        self.assertEqual(len({spec.identifier for spec in v3}), len(v3))
+        self.assertEqual(len({" ".join(spec.question.lower().split()) for spec in v3}), len(v3))
+        validation = VALIDATION_FAMILIES_BY_EDITION["v3"]
+        self.assertTrue(validation <= {spec.family for spec in v3})
+        self.assertTrue(all(family.startswith("v3-") for family in validation))
     def test_uses_pagila_smallint_active_flag(self) -> None:
         active_specs = [spec for spec in build_specs() if spec.family == "customer-store-active"]
         self.assertEqual(len(active_specs), 2)

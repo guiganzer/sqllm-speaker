@@ -43,3 +43,28 @@ class PagilaAgentToolsTests(unittest.TestCase):
             result = tools.execute_readonly_sql("SELECT x FROM film")
         self.assertTrue(result.approved)
         self.assertEqual(result.error, "ERROR: column x does not exist")
+
+    def test_enriched_schema_has_relationships_cardinality_and_safe_hints(self) -> None:
+        tools = PagilaAgentTools()
+        responses = [
+            [("film_id", "integer", "NO", "")],
+            [("PRIMARY KEY", "film_id", "film", "film_id")],
+            [("1000",)],
+            [("G",), ("PG",)],
+            [("Trailers",)],
+        ]
+        with patch.object(tools, "_run_tsv", side_effect=responses) as run:
+            schema = tools.get_enriched_table_schema("film")
+            cached = tools.get_enriched_table_schema("film")
+        self.assertEqual(schema, cached)
+        self.assertIn("-- cardinality: 1000 rows", schema)
+        self.assertIn("-- primary key: film.film_id", schema)
+        self.assertIn("-- values film.rating: G, PG", schema)
+        self.assertEqual(run.call_count, 5)
+
+    def test_enriched_schema_rejects_invalid_identifier(self) -> None:
+        tools = PagilaAgentTools()
+        with patch.object(tools, "_run_tsv") as run:
+            with self.assertRaises(ValueError):
+                tools.get_enriched_table_schema("film; DROP TABLE film")
+        run.assert_not_called()

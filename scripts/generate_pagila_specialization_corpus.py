@@ -33,6 +33,13 @@ VALIDATION_FAMILIES_BY_EDITION = {
             "customer-list-country-view",
         }
     ),
+    "v3": frozenset(
+        {
+            "v3-actor-prefix-rating",
+            "v3-rental-day-store",
+            "v3-category-revenue-top",
+        }
+    ),
 }
 
 
@@ -60,16 +67,23 @@ def _internal_benchmark_sets() -> tuple[set[str], set[str]]:
 def build_records(tools: PagilaAgentTools, *, edition: str) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     internal_questions, internal_sql = _internal_benchmark_sets()
     records: list[dict[str, Any]] = []
+    execution_cache: dict[str, Any] = {}
+    context_cache: dict[str, Any] = {}
     specs = build_specs(edition)
     for spec in specs:
         normalized_question = " ".join(spec.question.lower().split())
         normalized_sql = canonical_sql(spec.sql)
         if normalized_question in internal_questions or normalized_sql in internal_sql:
             raise ValueError(f"Vazamento para benchmark Pagila congelado: {spec.identifier}")
-        execution = tools.execute_readonly_sql(normalized_sql, max_rows=10)
+        if normalized_sql not in execution_cache:
+            execution_cache[normalized_sql] = tools.execute_readonly_sql(normalized_sql, max_rows=10)
+        execution = execution_cache[normalized_sql]
         if not execution.approved or execution.error:
             raise RuntimeError(f"Consulta não executável ({spec.identifier}): {execution.error or execution.reason}")
-        context = compile_schema_context(normalized_sql, tools.get_table_schema)
+        if normalized_sql not in context_cache:
+            schema_lookup = tools.get_enriched_table_schema if edition == "v3" else tools.get_table_schema
+            context_cache[normalized_sql] = compile_schema_context(normalized_sql, schema_lookup)
+        context = context_cache[normalized_sql]
         records.append(
             {
                 "id": spec.identifier,
@@ -85,6 +99,7 @@ def build_records(tools: PagilaAgentTools, *, edition: str) -> tuple[list[dict[s
         "internal_pagila_benchmark_questions": len(internal_questions),
         "internal_pagila_benchmark_sql": len(internal_sql),
         "specialization_fingerprint": corpus_fingerprint(specs),
+        "unique_executable_sql": len(execution_cache),
     }
 
 
@@ -100,7 +115,7 @@ def _write_jsonl(path: Path, rows: list[dict[str, Any]]) -> str:
 
 def generate(*, output: Path, tools: PagilaAgentTools, edition: str = "v1") -> dict[str, Any]:
     if edition not in VALIDATION_FAMILIES_BY_EDITION:
-        raise ValueError("edition deve ser v1 ou v2.")
+        raise ValueError("edition deve ser v1, v2 ou v3.")
     if output.exists():
         raise FileExistsError(f"A saída já existe para preservar reprodutibilidade: {output}")
     records, guard = build_records(tools, edition=edition)
@@ -121,6 +136,7 @@ def generate(*, output: Path, tools: PagilaAgentTools, edition: str = "v1") -> d
         "container": tools.container,
         "source": "pagila-v18-fc7a867-public",
         "generation": "parameterized-public-templates",
+        "schema_context_version": "pagila-enriched-v1" if edition == "v3" else "pagila-columns-v1",
         "external_sakila_included": False,
         "frozen_internal_pagila_benchmark_included": False,
         "validation_families": sorted(validation_families),
@@ -142,14 +158,14 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument("--container", default="sqllm-pagila-postgres")
     parser.add_argument("--database", default="pagila")
     parser.add_argument("--label", default="pagila-v18-fc7a867-pt-v1")
-    parser.add_argument("--edition", choices=("v1", "v2"), default="v1")
+    parser.add_argument("--edition", choices=("v1", "v2", "v3"), default="v1")
     return parser.parse_args()
 
 
 def main() -> None:
     arguments = parse_arguments()
     result = generate(
-        output=ROOT / "data" / "processed" / "phase-02" / arguments.label,
+        output=ROOT / "data" / "processed" / ("phase-03" if arguments.edition == "v3" else "phase-02") / arguments.label,
         tools=PagilaAgentTools(container=arguments.container, database=arguments.database),
         edition=arguments.edition,
     )

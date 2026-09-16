@@ -132,11 +132,14 @@ def build_specs(edition: str = "v1") -> list[SpecializationSpec]:
         "SELECT DISTINCT customer.first_name, customer.last_name FROM customer JOIN payment USING (customer_id) WHERE payment.amount > {value} ORDER BY customer.last_name, customer.first_name",
         (2, 4, 6, 8, 10),
     )
-    if edition == "v2":
+    if edition in ("v2", "v3"):
         specs.extend(_v2_specs())
-    elif edition != "v1":
-        raise ValueError("edition deve ser v1 ou v2.")
-    _validate_specs(specs)
+    if edition == "v3":
+        from .phase_03 import build_v3_specs
+        specs.extend(build_v3_specs())
+    elif edition not in ("v1", "v2"):
+        raise ValueError("edition deve ser v1, v2 ou v3.")
+    _validate_specs(specs, allow_duplicate_sql=edition == "v3")
     return specs
 
 
@@ -213,7 +216,7 @@ def _v2_specs() -> list[SpecializationSpec]:
     return specs
 
 
-def _validate_specs(specs: Iterable[SpecializationSpec]) -> None:
+def _validate_specs(specs: Iterable[SpecializationSpec], *, allow_duplicate_sql: bool = False) -> None:
     seen_ids: set[str] = set()
     seen_questions: set[str] = set()
     seen_sql: set[str] = set()
@@ -226,7 +229,7 @@ def _validate_specs(specs: Iterable[SpecializationSpec]) -> None:
             raise ValueError(f"Pergunta repetida: {spec.identifier}")
         seen_questions.add(normalized_question)
         normalized_sql = canonical_sql(spec.sql)
-        if normalized_sql in seen_sql:
+        if not allow_duplicate_sql and normalized_sql in seen_sql:
             raise ValueError(f"SQL repetido: {spec.identifier}")
         seen_sql.add(normalized_sql)
 
