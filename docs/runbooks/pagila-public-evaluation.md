@@ -21,6 +21,8 @@ A geração recusa qualquer SQL que não passe na política somente leitura, nã
 
 O conjunto verifica contagens, filtros, agregações, ordenação, joins, datas, views e colunas descritivas do Pagila. Ele é intencionalmente pequeno e reproduzível: valida o runtime antes de gerar dados de especialização em maior escala.
 
-## Próxima implementação
+## Estado e próxima etapa
 
-Construir um compilador que forneça a cada consulta somente o recorte relevante do schema. Só então ampliar exemplos programáticos e considerar ajuste fino específico para Pagila.
+O compilador de contexto e a sessão com adapter já foram concluídos. O conjunto de 24 consultas permanece congelado para avaliação, inclusive no [benchmark do autor SQL](pagila-author-benchmark.md), e não pode entrar no corpus de especialização.
+
+A próxima etapa é gerar um corpus público Pagila separado, validá-lo por execução e registrar seu manifesto antes de qualquer ajuste fino.

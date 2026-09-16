@@ -35,14 +35,16 @@ A política e as transições são código determinístico. O runtime Pagila obt
 
 O Pagila está carregado localmente em PostgreSQL 18 e validado com 23 tabelas, 1.000 filmes descritivos e 16.044 locações. Consulte o [manifesto](docs/data-manifests/pagila-v18-fc7a867.md), o [runtime local](docs/runbooks/pagila-local-runtime.md), a [avaliação pública](docs/runbooks/pagila-public-evaluation.md) e o [estudo de candidatos](docs/research/public-descriptive-databases.md).
 
-O compilador de contexto já está disponível em [pagila-context-compiler.md](docs/runbooks/pagila-context-compiler.md): ele fornece somente as relações usadas na consulta e recusa ultrapassar o orçamento do prompt.
+O compilador de contexto já está disponível em [pagila-context-compiler.md](docs/runbooks/pagila-context-compiler.md): ele fornece somente as relações usadas na consulta e recusa ultrapassar o orçamento do prompt. O adapter da fase 1 já atua como autor SQL na [sessão modelada](docs/runbooks/pagila-model-agentic-session.md), com guardião de escopo, política e executor somente leitura.
+
+A qualidade pré-especialização foi congelada e repetida no [benchmark do autor SQL](docs/runbooks/pagila-author-benchmark.md): 24/24 propostas passaram no parse/escopo/política, 16/24 executaram, 1/24 devolveu o resultado de referência e 0/24 teve *exact match* canônico. A repetição independente produziu os mesmos resultados.
 
 Próximas implementações, nesta ordem:
 
-1. Conectar o adapter treinado como autor SQL da sessão agentic.
-2. Ampliar a avaliação pública gerada e validada por execução.
-3. Preparar especialização QLoRA com exemplos públicos gerados e executados no Pagila.
-4. Comparar o adapter especializado, o adapter da fase 1 e o baseline no benchmark público congelado e na avaliação Pagila.
+1. Gerar um corpus público Pagila de especialização, separado das 24 perguntas congeladas do benchmark.
+2. Validar por execução, deduplicar e registrar o manifesto desse corpus.
+3. Treinar o adapter QLoRA Pagila e repetir o benchmark com o mesmo contrato.
+4. Exibir os deltas com o comparador versionado e, só então, evoluir a seleção autônoma de relações pelo especialista de schema.
 
 ## Retomada rápida
 

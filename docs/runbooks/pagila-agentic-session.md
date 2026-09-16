@@ -22,6 +22,6 @@ uv run python scripts/run_pagila_agentic_session.py `
   --max-rows 20
 ```
 
-A CLI exige que o autor/modelo forneça as tabelas e SQL nesta primeira integração. O próximo passo é conectar o adapter treinado como autor SQL e usar as ferramentas para escolher schema e reparar consultas automaticamente.
+A CLI é o modo de depuração com SQL fornecido. Para usar o adapter treinado como autor SQL, consulte a [sessão modelada](pagila-model-agentic-session.md). A seleção autônoma de relações permanece uma etapa posterior, medida separadamente.
 
 Nenhuma ferramenta aceita escrita: há defesa em três camadas — política lexical, encapsulamento de `SELECT` com limite e conta PostgreSQL sem privilégios de `CREATE`, `INSERT`, `UPDATE`, `DELETE` ou DDL.

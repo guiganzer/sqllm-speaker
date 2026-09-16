@@ -1,6 +1,6 @@
 import unittest
 
-from llm_to_sql.agentic.context_compiler import ContextCompilationError, compile_schema_context, extract_relation_names
+from llm_to_sql.agentic.context_compiler import ContextCompilationError, compile_schema_context, extract_relation_names, validate_relation_scope
 
 
 SCHEMAS = {
@@ -22,6 +22,11 @@ class ContextCompilerTests(unittest.TestCase):
         self.assertEqual(context.relations, ("film", "film_category"))
         self.assertIn("public.film", context.ddl)
         self.assertNotIn("public.category", context.ddl)
+
+    def test_rejects_relation_outside_schema_context(self) -> None:
+        self.assertEqual(validate_relation_scope("SELECT film_id FROM film", ("film",)), ("film",))
+        with self.assertRaises(ContextCompilationError):
+            validate_relation_scope("SELECT category_id FROM category", ("film",))
 
     def test_rejects_context_above_budget(self) -> None:
         with self.assertRaises(ContextCompilationError):
