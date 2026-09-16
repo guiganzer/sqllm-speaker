@@ -39,6 +39,8 @@ O compilador de contexto já está disponível em [pagila-context-compiler.md](d
 
 A qualidade pré-especialização foi congelada e repetida no [benchmark do autor SQL](docs/runbooks/pagila-author-benchmark.md): 24/24 propostas passaram no parse/escopo/política, 16/24 executaram, 1/24 devolveu o resultado de referência e 0/24 teve *exact match* canônico. A repetição independente produziu os mesmos resultados.
 
+A validação externa de terceiros foi adicionada em [external-sakila-validation.md](docs/runbooks/external-sakila-validation.md): os 30 gabaritos MIT do Sakila foram transpostos de MySQL para PostgreSQL/Pagila e todos executaram sob a conta somente leitura. Ela é bloqueada para treino e não substitui a métrica PT-BR do Pagila.
+
 Próximas implementações, nesta ordem:
 
 1. Gerar um corpus público Pagila de especialização, separado das 24 perguntas congeladas do benchmark.
