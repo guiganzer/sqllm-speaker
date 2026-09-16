@@ -35,7 +35,7 @@ A camada agentic é composta por contratos de ferramentas, política de leitura 
 
 ## Próxima etapa: banco de dados próprio
 
-A fase 2 especializa o adapter no schema privado do usuário sem expor dados sensíveis ao Git. O roteiro completo, entregáveis e critérios de aceitação estão em [docs/roadmap/phase-02-private-schema.md](docs/roadmap/phase-02-private-schema.md).
+Antes da especialização privada, a próxima experiência será com a base pública PostgreSQL Pagila, escolhida por ter dados relacionais e descrições já carregáveis. Consulte o [estudo de candidatos](docs/research/public-descriptive-databases.md). A especialização no schema privado permanece documentada em [docs/roadmap/phase-02-private-schema.md](docs/roadmap/phase-02-private-schema.md).
 
 Próximas implementações, nesta ordem:
 
