@@ -121,3 +121,8 @@ O corpus incremental v2 foi preparado e validado no Pagila público: 212 exemplo
 ## Resultado fase 2 Pagila v2 — 16 de setembro de 2026
 
 A v2 continuou o adapter Pagila v1 com 212 exemplos públicos validados (165 treino, 47 validação). No benchmark congelado, preservou 22/24 SQLs executados e elevou resultados idênticos de 3/24 para 5/24. Parse e escopo permanecem em 23/24. Ela é o candidato ativo para inferência experimental, ainda protegido pelo runtime agentic; a próxima melhoria deve focar reparo orientado por execução e geração estruturada. Consulte docs/experiment-manifests/phase-02-pagila-v2-2026-09-16.md.
+
+
+## Runtime de reparo agentic — 16 de setembro de 2026
+
+Após a especialização v2, o runtime ganhou um reparo estruturado limitado: falhas de escopo e de execução podem receber uma única nova proposta com a SQL anterior, erro sanitizado e exatamente o mesmo schema. Falhas de política continuam bloqueadas. O adapter experimental padrão da sessão Pagila é phase-02-pagila-v2-768f209d9ea8. A implementação tem cobertura na suíte de 50 testes e o uso está em docs/runbooks/pagila-agentic-repair.md.

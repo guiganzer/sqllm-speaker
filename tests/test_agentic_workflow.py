@@ -24,6 +24,7 @@ class AgenticWorkflowTests(unittest.TestCase):
         )
         self.assertEqual(set(session.table_schemas), {"film", "category"})
         self.assertEqual(session.stage, SessionStage.AWAITING_SQL)
+
     def test_execution_error_enters_repair_once(self) -> None:
         workflow = AgenticWorkflow(max_repairs=1)
         session = workflow.begin("Liste clientes")
@@ -32,6 +33,17 @@ class AgenticWorkflowTests(unittest.TestCase):
         workflow.record_execution(session, succeeded=False, sanitized_error="coluna ausente")
         self.assertEqual(session.stage, SessionStage.REPAIRING)
         self.assertEqual(session.repairs, 1)
+
+    def test_scope_failure_enters_one_repair_then_blocks(self) -> None:
+        workflow = AgenticWorkflow(max_repairs=1)
+        session = workflow.begin("Liste clientes")
+        workflow.add_schema(session, "clientes", "CREATE TABLE clientes (id INTEGER)")
+        workflow.record_validation_failure(session, "Relação fora do schema")
+        self.assertEqual(session.stage, SessionStage.REPAIRING)
+        self.assertEqual(session.repairs, 1)
+        workflow.add_schema(session, "clientes", "CREATE TABLE clientes (id INTEGER)")
+        workflow.record_validation_failure(session, "Relação fora do schema novamente")
+        self.assertEqual(session.stage, SessionStage.BLOCKED)
 
     def test_policy_failure_blocks_session(self) -> None:
         workflow = AgenticWorkflow()

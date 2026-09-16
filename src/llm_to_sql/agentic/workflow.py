@@ -67,6 +67,19 @@ class AgenticWorkflow:
             session.stage = SessionStage.BLOCKED
         return result
 
+    def record_validation_failure(self, session: AgenticSession, sanitized_error: str) -> None:
+        """Solicita um único reparo para SQL que falhou antes da execução."""
+
+        self._require_stage(session, SessionStage.AWAITING_SQL)
+        if not sanitized_error.strip():
+            raise ValueError("sanitized_error é obrigatório.")
+        if session.repairs >= self.max_repairs:
+            session.stage = SessionStage.BLOCKED
+            session.final_reason = "Limite de reparos atingido."
+            return
+        session.repairs += 1
+        session.stage = SessionStage.REPAIRING
+        session.final_reason = sanitized_error.strip()
     def record_execution(self, session: AgenticSession, *, succeeded: bool, sanitized_error: str | None = None) -> None:
         self._require_stage(session, SessionStage.AWAITING_EXECUTION)
         if succeeded:

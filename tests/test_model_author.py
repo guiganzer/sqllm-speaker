@@ -12,10 +12,21 @@ class ModelAuthorTests(unittest.TestCase):
         self.assertIn("<schema>", messages[1]["content"])
         self.assertIn("Quantos filmes", messages[1]["content"])
 
-    def test_repair_prompt_includes_only_sanitized_error(self) -> None:
-        message = build_author_messages("Liste filmes", "CREATE TABLE public.film (title text);", "column titulo does not exist")[1]["content"]
+    def test_repair_prompt_includes_sql_and_sanitized_error(self) -> None:
+        message = build_author_messages(
+            "Liste filmes",
+            "CREATE TABLE public.film (title text);",
+            "column titulo does not exist",
+            "SELECT titulo FROM film",
+        )[1]["content"]
         self.assertIn("<erro_sanitizado>", message)
         self.assertIn("column titulo", message)
+        self.assertIn("<consulta_anterior>", message)
+        self.assertIn("SELECT titulo FROM film", message)
+
+    def test_repair_requires_previous_sql(self) -> None:
+        with self.assertRaises(ValueError):
+            build_author_messages("Liste filmes", "CREATE TABLE public.film (title text);", "erro")
 
     def test_compiles_selected_relations_without_reference_sql(self) -> None:
         schemas = {"film": "CREATE TABLE public.film (film_id integer);"}

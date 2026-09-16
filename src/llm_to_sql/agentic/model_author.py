@@ -1,4 +1,4 @@
-"""Autor SQL local baseado no adapter QLoRA treinado na fase 1."""
+"""Autor SQL local baseado no adapter QLoRA especializado."""
 
 from __future__ import annotations
 
@@ -11,19 +11,28 @@ DEFAULT_MODEL_ID = "Qwen/Qwen3-4B-Thinking-2507"
 DEFAULT_MODEL_REVISION = "768f209d9ea81521153ed38c47d515654e938aea"
 
 
-def build_author_messages(question: str, schema_ddl: str, repair_error: str | None = None) -> list[dict[str, str]]:
-    """Monta a conversa mínima: pergunta, contexto permitido e saída somente SQL."""
+def build_author_messages(
+    question: str,
+    schema_ddl: str,
+    repair_error: str | None = None,
+    previous_sql: str | None = None,
+) -> list[dict[str, str]]:
+    """Monta a conversa mínima e estruturada para geração ou reparo SQL."""
 
     if not question.strip():
         raise ValueError("A pergunta não pode estar vazia.")
     if not schema_ddl.strip():
         raise ValueError("O schema não pode estar vazio.")
-    # Mantido idêntico ao contrato textual usado no treino da fase 1.
-    # Segurança e unicidade da statement são responsabilidade do guardião determinístico.
     system = "Você é um assistente especializado em SQL. Gere somente uma consulta SQL compatível com o schema fornecido. Não explique a resposta."
     user = f"<schema>\n{schema_ddl}\n</schema>\n<pergunta>\n{question.strip()}\n</pergunta>"
     if repair_error:
-        user += f"\n<erro_sanitizado>\n{repair_error.strip()}\n</erro_sanitizado>\nCorrija a consulta e responda somente SQL."
+        if not previous_sql or not previous_sql.strip():
+            raise ValueError("previous_sql é obrigatório durante reparo.")
+        user += (
+            f"\n<consulta_anterior>\n{previous_sql.strip()}\n</consulta_anterior>"
+            f"\n<erro_sanitizado>\n{repair_error.strip()}\n</erro_sanitizado>"
+            "\nCorrija somente o defeito informado. Use exclusivamente relações do schema e responda somente SQL."
+        )
     return [{"role": "system", "content": system}, {"role": "user", "content": user}]
 
 
@@ -35,7 +44,7 @@ def render_author_prompt(tokenizer, messages: list[dict[str, str]]) -> str:
 
 
 class PhaseOneSqlAuthor:
-    """Carregamento preguiçoso do adapter 4-bit para não ocupar VRAM fora da inferência."""
+    """Carregamento preguiçoso do adapter 4-bit para inferência local."""
 
     def __init__(
         self,
@@ -56,9 +65,15 @@ class PhaseOneSqlAuthor:
         self._model = None
         self._tokenizer = None
 
-    def generate(self, question: str, schema_ddl: str, repair_error: str | None = None) -> str:
+    def generate(
+        self,
+        question: str,
+        schema_ddl: str,
+        repair_error: str | None = None,
+        previous_sql: str | None = None,
+    ) -> str:
         model, tokenizer = self._load()
-        prompt = render_author_prompt(tokenizer, build_author_messages(question, schema_ddl, repair_error))
+        prompt = render_author_prompt(tokenizer, build_author_messages(question, schema_ddl, repair_error, previous_sql))
         encoded = tokenizer(prompt, return_tensors="pt")
         encoded = {key: value.to(model.device) for key, value in encoded.items()}
         import torch
