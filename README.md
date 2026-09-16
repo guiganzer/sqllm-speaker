@@ -106,3 +106,7 @@ A especialização incremental v2 preservou 91,67% de SQL executado e aumentou e
 A iteração v3 permanece no modelo atual e ataca o gargalo semântico. Foram geradas 2.066 perguntas PT-BR em 40 famílias, com 795 SQLs distintas validadas no Pagila somente leitura. O schema fornecido ao treino passa a incluir PK, FK, cardinalidade e hints categóricos públicos controlados. O runtime também ganhou geração de múltiplos candidatos e ranking determinístico, mantendo escopo, política e reparo limitado.
 
 O baseline por componentes mostra onde medir o ganho: projeção 29,17%, ordenação 25%, joins 50% e agrupamento 54,17%. Consulte o [runbook da v3](docs/runbooks/phase-03-pagila-v3.md) para os comandos de smoke, treino e avaliação, e o [manifesto do corpus](docs/data-manifests/pagila-v3-corpus-2026-09-16.md) para hashes e isolamento.
+
+## Treino Pagila v3 concluído
+
+O adapter v3 concluiu duas épocas e 198 passos com perda final de validação 0,203507 e 59/59 testes aprovados. A curva permaneceu estável e monotonicamente melhor, mas a promoção depende do benchmark congelado de 24 perguntas. Veja o [manifesto do treino v3](docs/experiment-manifests/phase-03-pagila-v3-2026-09-16.md).
