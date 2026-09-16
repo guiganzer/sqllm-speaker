@@ -42,10 +42,18 @@ class AgenticWorkflow:
         return AgenticSession(question=question.strip())
 
     def add_schema(self, session: AgenticSession, table_name: str, ddl: str) -> None:
+        self.add_schemas(session, {table_name: ddl})
+
+    def add_schemas(self, session: AgenticSession, schemas: dict[str, str]) -> None:
+        """Conclui uma rodada de descoberta com uma ou mais relações antes do autor SQL atuar."""
+
         self._require_stage(session, SessionStage.AWAITING_SCHEMA, SessionStage.REPAIRING)
-        if not table_name.strip() or not ddl.strip():
-            raise ValueError("table_name e ddl são obrigatórios")
-        session.table_schemas[table_name] = ddl
+        if not schemas:
+            raise ValueError("Ao menos um schema é obrigatório")
+        for table_name, ddl in schemas.items():
+            if not table_name.strip() or not ddl.strip():
+                raise ValueError("table_name e ddl são obrigatórios")
+            session.table_schemas[table_name] = ddl
         session.stage = SessionStage.AWAITING_SQL
 
     def submit_sql(self, session: AgenticSession, sql: str) -> SqlPolicyResult:

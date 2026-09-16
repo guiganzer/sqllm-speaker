@@ -31,7 +31,7 @@ Pergunta em português + schema atual
           Resultado ou impedimento seguro
 ```
 
-A camada agentic é composta por contratos de ferramentas, política de leitura e uma máquina de estados determinística. O modelo nunca decide sozinho se uma consulta pode ser executada.
+A camada agentic é composta por contratos de ferramentas, política de leitura e uma máquina de estados determinística. O modelo nunca decide sozinho se uma consulta pode ser executada. O Pagila já está conectado por perfil de banco, descoberta de múltiplas tabelas e executor com conta somente leitura; consulte a [sessão agentic](docs/runbooks/pagila-agentic-session.md).
 
 ## Próxima etapa: banco de dados próprio
 

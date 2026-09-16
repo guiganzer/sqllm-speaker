@@ -12,6 +12,18 @@ class AgenticWorkflowTests(unittest.TestCase):
         workflow.record_execution(session, succeeded=True)
         self.assertEqual(session.stage, SessionStage.FINALIZED)
 
+    def test_accepts_multiple_schemas_in_one_discovery_round(self) -> None:
+        workflow = AgenticWorkflow()
+        session = workflow.begin("Liste filmes por categoria")
+        workflow.add_schemas(
+            session,
+            {
+                "film": "CREATE TABLE film (film_id INTEGER)",
+                "category": "CREATE TABLE category (category_id INTEGER)",
+            },
+        )
+        self.assertEqual(set(session.table_schemas), {"film", "category"})
+        self.assertEqual(session.stage, SessionStage.AWAITING_SQL)
     def test_execution_error_enters_repair_once(self) -> None:
         workflow = AgenticWorkflow(max_repairs=1)
         session = workflow.begin("Liste clientes")
