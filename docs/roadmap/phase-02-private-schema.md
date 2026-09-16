@@ -29,9 +29,9 @@ Antes de iniciar o processamento, reunir em canal seguro:
 
 Implementar um adaptador de introspecção por dialeto que obtenha tabelas, colunas, tipos, chaves e comentários permitidos. Normalizar em uma representação estável, calcular hash e produzir um perfil redigido. Critério: o snapshot de mesma estrutura gera o mesmo hash e nunca inclui valores de linhas.
 
-### 2. Preparação do dataset privado
+### 2. Compilação de contexto e preparação do dataset privado
 
-Criar um pipeline que valide SQL com `sqlglot`, associe cada pergunta ao snapshot correto e rejeite duplicatas, comandos de escrita e referências inexistentes. Separar treino, validação e teste por schema/caso de uso para impedir vazamento. Critério: relatório com contagens, rejeições e hashes, sem conteúdo privado versionado.
+Criar um compilador que reduza cada snapshot ao DDL relevante para a consulta, expanda dependências de views e respeite o orçamento de contexto. Em seguida, validar SQL com `sqlglot`, associar cada pergunta ao snapshot correto e rejeitar duplicatas, comandos de escrita e referências inexistentes. Separar treino, validação e teste por schema/caso de uso para impedir vazamento. Critério: relatório com contagens, rejeições e hashes, sem conteúdo privado versionado.
 
 ### 3. Treino de especialização
 

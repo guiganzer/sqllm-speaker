@@ -37,6 +37,8 @@ A camada agentic é composta por contratos de ferramentas, política de leitura 
 
 A fase 2 especializa o adapter no schema privado do usuário sem expor dados sensíveis ao Git. O roteiro completo, entregáveis e critérios de aceitação estão em [docs/roadmap/phase-02-private-schema.md](docs/roadmap/phase-02-private-schema.md).
 
+O contrato e o comando de entrada dos materiais privados estão em [docs/runbooks/phase-02-private-intake.md](docs/runbooks/phase-02-private-intake.md).
+
 Próximas implementações, nesta ordem:
 
 1. Receber DDL/schema, dialeto e amostras de perguntas → SQL já validadas, sem credenciais nem dumps de produção.
