@@ -35,7 +35,7 @@ A camada agentic é composta por contratos de ferramentas, política de leitura 
 
 ## Próxima etapa: banco de dados próprio
 
-Antes da especialização privada, a próxima experiência será com a base pública PostgreSQL Pagila, escolhida por ter dados relacionais e descrições já carregáveis. Consulte o [estudo de candidatos](docs/research/public-descriptive-databases.md). A especialização no schema privado permanece documentada em [docs/roadmap/phase-02-private-schema.md](docs/roadmap/phase-02-private-schema.md).
+O experimento público Pagila está carregado localmente em PostgreSQL 18 e validado com 23 tabelas, 1.000 filmes descritivos e 16.044 locações. Consulte o [manifesto](docs/data-manifests/pagila-v18-fc7a867.md), o [runbook do runtime](docs/runbooks/pagila-local-runtime.md) e o [estudo de candidatos](docs/research/public-descriptive-databases.md). A especialização no schema privado permanece documentada em [docs/roadmap/phase-02-private-schema.md](docs/roadmap/phase-02-private-schema.md).
 
 Próximas implementações, nesta ordem:
 
