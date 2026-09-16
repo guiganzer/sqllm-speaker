@@ -89,3 +89,8 @@ A fonte de verdade para a continuidade do trabalho é [PROJECT_CONTEXT.md](PROJE
 ## Treinamento de especialização Pagila
 
 A fase 2 está implementada e pronta para execução controlada. O corpus é gerado publicamente, validado por execução e separado dos benchmarks Pagila e Sakila. O treino continua o adapter da fase 1 em vez de criar um adapter do zero. Siga os comandos e critérios de continuidade no [runbook da fase 2](docs/runbooks/phase-02-pagila-specialization.md).
+
+
+## Resultado da especialização Pagila v1
+
+A primeira especialização Pagila foi concluída e medida no benchmark congelado: execução passou de 66,67% para 91,67%, resultados idênticos de 4,17% para 12,50% e exact match canônico de 0% para 4,17%. A conformidade de escopo caiu de 100% para 95,83%, por isso a próxima iteração ampliará o corpus relacional antes de qualquer uso autônomo. Consulte o [manifesto do experimento](docs/experiment-manifests/phase-02-pagila-v1-2026-09-16.md).

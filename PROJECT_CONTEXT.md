@@ -106,3 +106,8 @@ Não combinar `b-mc2/sql-create-context` com `emdemor/sql-create-context-pt`, po
 ## Estado da fase 2 — especialização Pagila
 
 A implementação da fase 2 está pronta para execução local: o gerador parametrizado em scripts/generate_pagila_specialization_corpus.py cria um corpus público em português, valida cada SQL no PostgreSQL Pagila sob sqllm_readonly, compila apenas o schema relevante e grava hashes em um manifesto. O treino está em scripts/train_phase_02_pagila.py e continua o adapter concluído da fase 1, sem reinicializar LoRA. As 24 perguntas Pagila congeladas e os 30 itens externos Sakila permanecem proibidos no treino; a divisão de validação é por família de SQL. Execute e retome pelo runbook docs/runbooks/phase-02-pagila-specialization.md.
+
+
+## Resultado fase 2 Pagila v1 — 16 de setembro de 2026
+
+A especialização QLoRA Pagila v1 foi concluída a partir do adapter geral da fase 1: 119 exemplos de treino, 30 validações, três épocas e 24 passos. O mesmo benchmark Pagila congelado mostrou 22/24 SQLs executados contra 16/24 antes; resultados idênticos passaram de 1/24 para 3/24 e exact match canônico de 0/24 para 1/24. Parse/escopo caiu de 24/24 para 23/24. O resultado é uma melhoria material de execução, mas não aprova uso autônomo: a próxima iteração deve ampliar o corpus público em estruturas relacionais sem alterar benchmarks. Consulte docs/experiment-manifests/phase-02-pagila-v1-2026-09-16.md.
