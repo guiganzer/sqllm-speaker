@@ -10,13 +10,13 @@ O produto final deve favorecer consultas de leitura. A geração de SQL não é,
 
 ## Escopo confirmado
 
-O projeto seguirá três etapas:
+O projeto seguirá três etapas públicas:
 
 1. **Treinamento geral:** ensinar SQL e a conversão pergunta em português + schema para SQL com dados públicos.
-2. **Especialização no schema próprio:** aplicar ajuste fino adicional em perguntas e SQL validados para o banco do usuário.
-3. **Schema em tempo de uso:** enviar ao modelo o schema atual a cada pergunta, evitando depender apenas do que foi memorizado no treinamento.
+2. **Experimento Pagila:** especializar e avaliar com um banco PostgreSQL público, reproduzível e descritivo.
+3. **Schema em tempo de uso:** enviar ao modelo apenas o schema Pagila relevante a cada pergunta, evitando depender apenas do que foi memorizado no treinamento.
 
-O trabalho iniciado neste repositório evoluiu para a base agentic e o planejamento da etapa 1.
+O trabalho evoluiu da fase 1 para o runtime agentic e o experimento público Pagila.
 
 ## Decisão agentic
 
@@ -34,7 +34,7 @@ Fontes da decisão:
 - O schema é contexto obrigatório tanto no treino quanto na inferência.
 - A resposta do modelo deve conter SQL, sem explicações, quando a solicitação for respondível.
 - O executor deve operar com credencial somente de leitura e impor uma lista de comandos permitidos. Começar com `SELECT`, `WITH` e `EXPLAIN`; nunca executar SQL gerado diretamente em produção sem validação.
-- Dados privados, dumps, credenciais, modelos baixados e adapters não entram no Git.
+- Dumps locais, credenciais, modelos baixados e adapters não entram no Git.
 - Toda origem de dados deve ter versão/revisão, licença e transformação registradas.
 - O conjunto de avaliação nunca pode ser reutilizado no treino.
 
@@ -79,7 +79,7 @@ Não combinar `b-mc2/sql-create-context` com `emdemor/sql-create-context-pt`, po
 - Estrutura de pastas, documentação e configuração-exemplo criadas.
 - A base determinística do runtime agentic foi criada em `src/llm_to_sql/agentic/`, com testes padrão do Python criados em `tests/`.
 - Projeto uv configurado com Python 3.11 fixado em `.python-version`, dependências em `.venv` e lockfile `uv.lock`.
-- Os 19 testes automatizados passam via `uv run python -m unittest discover -s tests -t . -v`.
+- Os 27 testes automatizados passam via `uv run python -m unittest discover -s tests -t . -v`.
 - O dataset da fase 1 foi preparado localmente: 78.577 linhas de origem, 78.389 aceitas, 70.551 em treino e 7.838 em validação. Foram rejeitadas 187 consultas que não fizeram parse e 1 exemplo acima do limite de caracteres.
 - A GPU passou no preflight PyTorch: RTX 4070 Laptop, CUDA 12.8, BF16 e 8 GiB de VRAM. Dependências de QLoRA/SFT foram adicionadas ao `.venv` e fixadas pelo `uv.lock`.
 - O smoke test QLoRA da fase 1 foi aprovado na GPU: 5 passos em 43,112 s, perda de treino 1,6972 e perda de validação 0,4041. O adapter local e o manifesto ignorado pelo Git estão em `artifacts/runs/phase-01-smoke-768f209d9ea8/`; o resumo versionado está em `docs/experiment-manifests/phase-01-smoke-2026-09-15.md`.

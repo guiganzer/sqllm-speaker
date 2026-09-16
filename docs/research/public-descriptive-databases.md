@@ -4,7 +4,7 @@
 
 **Recomendação imediata: Pagila**, a porta PostgreSQL do banco clássico Sakila. Ele é o melhor próximo experimento controlado: é relacional, possui carga de dados pronta, usa PostgreSQL como os materiais anteriores e contém relações textuais/descritivas úteis — especialmente `film.title`, `film.description`, categorias, atores, clientes e transações de locação.
 
-A recomendação não substitui a especialização futura em um banco próprio. Ela cria uma fase intermediária pública para validar o compilador de contexto, o runtime somente leitura e a avaliação com um schema fixo e reproduzível.
+A recomendação define o caminho atual do projeto: validar o compilador de contexto, o runtime somente leitura e a avaliação em um schema público, fixo e reproduzível.
 
 ## Critérios usados
 

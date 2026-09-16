@@ -41,4 +41,4 @@ Os dez desvios estruturais são erros reais de coluna ou semântica em consultas
 
 ## Decisão
 
-**Fase 1 aprovada para a especialização privada.** O adapter atende ao contrato de resposta SQL e supera amplamente o modelo-base na tarefa direta. Isso não autoriza execução automática em banco: a fase 2 deve usar schema privado, SQLs validados, credencial read-only e avaliação isolada. O benchmark público acima será repetido após a fase 2 para detectar regressões.
+**Fase 1 aprovada para o experimento público Pagila.** O adapter atende ao contrato de resposta SQL e supera amplamente o modelo-base na tarefa direta. Isso não autoriza execução automática: a próxima etapa usa schema Pagila, consultas públicas validadas, credencial read-only e avaliação isolada. O benchmark público acima será repetido após a etapa seguinte para detectar regressões.

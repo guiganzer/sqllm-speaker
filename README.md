@@ -1,6 +1,6 @@
 # SQLLM Speaker
 
-Assistente local de **Text-to-SQL em português**. O projeto especializa um modelo aberto para transformar perguntas em português em SQL de leitura, sempre condicionado ao schema atual do banco e protegido por validações determinísticas.
+Assistente local e agentic de **Text-to-SQL em português**. O projeto especializa um modelo aberto para transformar perguntas em português em SQL de leitura, sempre condicionado ao schema atual do Pagila e protegido por validações determinísticas.
 
 > SQL gerado não é autorização de execução. O runtime aceita somente consultas de leitura após validação de sintaxe, referências ao schema e política de segurança.
 
@@ -17,36 +17,31 @@ A fase 1 — treinamento geral com dados públicos — está concluída. O adapt
 
 O *exact match* é deliberadamente rígido: compara a estrutura canônica com a consulta de referência. SQL semanticamente equivalente pode não pontuar nessa métrica; por isso, as métricas de schema, segurança e execução também fazem parte da avaliação.
 
-## Arquitetura
+## Arquitetura agentic
 
 ```text
-Pergunta em português + schema atual
+Pergunta em português + schema Pagila relevante
                 ↓
-     Modelo especializado (LoRA/QLoRA)
+  Orquestrador → especialista de schema → autor SQL
                 ↓
- Validador: sintaxe + schema + política SQL
+ Guardião de política → executor somente leitura → finalizador
                 ↓
- Executor opcional com credencial somente leitura
-                ↓
-          Resultado ou impedimento seguro
+          Resultado, bloqueio ou reparo limitado
 ```
 
-A camada agentic é composta por contratos de ferramentas, política de leitura e uma máquina de estados determinística. O modelo nunca decide sozinho se uma consulta pode ser executada. O Pagila já está conectado por perfil de banco, descoberta de múltiplas tabelas e executor com conta somente leitura; consulte a [sessão agentic](docs/runbooks/pagila-agentic-session.md).
+A política e as transições são código determinístico. O runtime Pagila obtém perfil e múltiplos schemas, bloqueia escrita, limita tempo/linhas e executa com a conta `sqllm_readonly`. Consulte a [sessão agentic](docs/runbooks/pagila-agentic-session.md).
 
-## Próxima etapa: banco de dados próprio
+## Próxima etapa: experimento público Pagila
 
-O experimento público Pagila está carregado localmente em PostgreSQL 18 e validado com 23 tabelas, 1.000 filmes descritivos e 16.044 locações. Consulte o [manifesto](docs/data-manifests/pagila-v18-fc7a867.md), o [runbook do runtime](docs/runbooks/pagila-local-runtime.md) e o [estudo de candidatos](docs/research/public-descriptive-databases.md). A especialização no schema privado permanece documentada em [docs/roadmap/phase-02-private-schema.md](docs/roadmap/phase-02-private-schema.md).
+O Pagila está carregado localmente em PostgreSQL 18 e validado com 23 tabelas, 1.000 filmes descritivos e 16.044 locações. Consulte o [manifesto](docs/data-manifests/pagila-v18-fc7a867.md), o [runtime local](docs/runbooks/pagila-local-runtime.md), a [avaliação pública](docs/runbooks/pagila-public-evaluation.md) e o [estudo de candidatos](docs/research/public-descriptive-databases.md).
 
 Próximas implementações, nesta ordem:
 
-1. Receber DDL/schema, dialeto e amostras de perguntas → SQL já validadas, sem credenciais nem dumps de produção.
-2. Criar o snapshot normalizado e versionado por hash do schema, mantendo o conteúdo privado fora do Git.
-3. Construir o dataset da fase 2 com divisão por schema/caso de uso e conjunto de avaliação isolado.
-4. Executar QLoRA de especialização e registrar manifesto com modelo, dados, hiperparâmetros, seed e adapter.
-5. Avaliar contra o benchmark público congelado e a avaliação privada, incluindo parse, schema, política, *exact match* e execução em ambiente seguro.
-6. Conectar o runtime agentic a um perfilador de schema e executor real somente leitura, com reparo limitado e telemetria redigida.
-
-Melhorias posteriores relevantes incluem cobertura de joins complexos, recuperação de contexto para schemas extensos, testes de regressão por dialeto, validação semântica com banco de homologação e uma interface de revisão humana antes de qualquer execução.
+1. Compilar contexto compacto de schema para cada consulta Pagila.
+2. Ampliar a avaliação pública gerada e validada por execução.
+3. Conectar o adapter treinado como autor SQL da sessão agentic.
+4. Preparar especialização QLoRA com exemplos públicos gerados e executados no Pagila.
+5. Comparar o adapter especializado, o adapter da fase 1 e o baseline no benchmark público congelado e na avaliação Pagila.
 
 ## Retomada rápida
 
@@ -56,7 +51,7 @@ Antes de alterar código, dados ou configuração, leia nesta ordem:
 2. [ADR-001: estratégia de treinamento](docs/decisions/ADR-001-estrategia-de-treinamento.md).
 3. [ADR-002: arquitetura agentic](docs/decisions/ADR-002-arquitetura-agentic.md).
 4. [Arquitetura do runtime](docs/architecture/agentic-runtime.md).
-5. [Roteiro da fase 2 privada](docs/roadmap/phase-02-private-schema.md).
+5. [Manifesto Pagila](docs/data-manifests/pagila-v18-fc7a867.md).
 
 ## Desenvolvimento local
 
@@ -67,20 +62,20 @@ uv sync
 uv run python -m unittest discover -s tests -t . -v
 ```
 
-O ambiente esperado é Windows com RTX 4070 Laptop de 8 GiB e 32 GiB de RAM. O alvo operacional inicial é um modelo de 4B parâmetros com QLoRA em 4-bit.
+Para executar a avaliação pública ou a sessão agentic, inicie o Docker Desktop e siga os runbooks Pagila.
 
 ## Estrutura
 
 - `configs/`: configurações versionadas e exemplos de execução.
-- `data/`: dados locais por estágio; o conteúdo de datasets é ignorado pelo Git.
-- `docs/`: decisões, manifestos, runbooks e roteiro de evolução.
-- `scripts/`: preparação, treino e avaliação.
-- `src/llm_to_sql/agentic/`: contratos de agentes, política SQL e máquina de estados.
+- `data/`: fontes e saídas locais; conteúdo de datasets é ignorado pelo Git.
+- `docs/`: decisões, manifestos, runbooks e pesquisa.
+- `scripts/`: preparação, treino, avaliação e sessões locais.
+- `src/llm_to_sql/agentic/`: contratos de agentes, política SQL, ferramentas e máquina de estados.
 - `tests/`: testes automatizados.
 - `artifacts/`: adapters, métricas e relatórios gerados; não versionados.
 
 ## Segurança e dados
 
-Não versione schemas privados, dados de clientes, dumps, credenciais, tokens do Hugging Face, adapters treinados ou artefatos de execução. O executor futuro deve usar uma conta dedicada somente leitura e aplicar limites de consulta, tempo e linhas retornadas.
+Não versione credenciais, tokens, modelos baixados, adapters treinados, resultados de consultas ou artefatos de execução. O executor usa uma conta dedicada somente leitura e aplica limites de consulta, tempo e linhas retornadas.
 
 A fonte de verdade para a continuidade do trabalho é [PROJECT_CONTEXT.md](PROJECT_CONTEXT.md). O histórico Git contém as decisões e entregas anteriores; cada experimento deve acrescentar seu manifesto versionado.

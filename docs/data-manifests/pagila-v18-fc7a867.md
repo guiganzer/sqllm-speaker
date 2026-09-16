@@ -41,6 +41,6 @@ Pagila é a base pública intermediária para:
 - validar compilação de contexto de schema;
 - gerar e executar consultas de leitura em português;
 - medir segurança, referências de schema e execução;
-- testar o runtime agentic antes de voltar a um banco privado.
+- testar o runtime agentic público com contexto de schema e conta somente leitura.
 
-Ele não substitui o benchmark público congelado da fase 1 nem a especialização futura no schema próprio.
+Ele complementa o benchmark público congelado da fase 1 como a base de especialização e avaliação atual.

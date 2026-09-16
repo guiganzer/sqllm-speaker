@@ -16,7 +16,7 @@ from llm_to_sql.agentic.policy import ReadOnlySqlPolicy
 
 @dataclass(frozen=True)
 class SqlAssessment:
-    """Resultado de validações que não exigem dados privados para executar SQL."""
+    """Resultado de validações estruturais que não exigem executar SQL."""
 
     parses: bool
     sql_only: bool

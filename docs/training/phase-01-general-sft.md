@@ -2,7 +2,7 @@
 
 ## Resultado esperado
 
-Produzir um adapter QLoRA local que receba um schema em DDL e uma pergunta em português, retornando exclusivamente uma consulta SQL. Esta fase ensina a habilidade geral; ela não conhece, nem deve conhecer, o banco privado do usuário.
+Produzir um adapter QLoRA local que receba um schema em DDL e uma pergunta em português, retornando exclusivamente uma consulta SQL. Esta fase ensina a habilidade geral e será seguida pelo experimento público Pagila.
 
 ## Fonte e recorte inicial
 
@@ -73,4 +73,4 @@ Não usar apenas *exact match*: consultas SQL semanticamente equivalentes podem 
 
 O pipeline de aquisição, preparação, deduplicação e divisão por schema foi implementado e validado. A execução de uma época foi concluída; o benchmark de 512 schemas isolados está registrado em `docs/experiment-manifests/phase-01-general-e1-2026-09-15.md`.
 
-A próxima fase é a especialização no schema privado. Preserve o benchmark público e execute-o novamente após o ajuste privado para detectar regressões de capacidade geral.
+A próxima fase é o experimento público Pagila. Preserve o benchmark público e execute-o novamente após qualquer ajuste para detectar regressões de capacidade geral.
