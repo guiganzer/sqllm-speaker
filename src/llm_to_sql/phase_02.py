@@ -32,7 +32,7 @@ def _specs_for_values(family: str, question_template: str, sql_template: str, va
     return rows
 
 
-def build_specs() -> list[SpecializationSpec]:
+def build_specs(edition: str = "v1") -> list[SpecializationSpec]:
     """Gera intenções públicas parametrizadas distintas dos benchmarks congelados."""
 
     specs: list[SpecializationSpec] = []
@@ -132,7 +132,84 @@ def build_specs() -> list[SpecializationSpec]:
         "SELECT DISTINCT customer.first_name, customer.last_name FROM customer JOIN payment USING (customer_id) WHERE payment.amount > {value} ORDER BY customer.last_name, customer.first_name",
         (2, 4, 6, 8, 10),
     )
+    if edition == "v2":
+        specs.extend(_v2_specs())
+    elif edition != "v1":
+        raise ValueError("edition deve ser v1 ou v2.")
     _validate_specs(specs)
+    return specs
+
+
+def _v2_specs() -> list[SpecializationSpec]:
+    """Famílias relacionais adicionais para a segunda iteração Pagila."""
+
+    specs: list[SpecializationSpec] = []
+    specs += _specs_for_values(
+        "staff-payment-left",
+        "Para cada funcionário, mostre a quantidade de pagamentos de valor até {value}, incluindo funcionários sem pagamento.",
+        "SELECT staff.staff_id, staff.first_name, staff.last_name, COUNT(payment.payment_id) AS total_pagamentos FROM staff LEFT JOIN payment ON payment.staff_id = staff.staff_id AND payment.amount <= {value} GROUP BY staff.staff_id, staff.first_name, staff.last_name ORDER BY total_pagamentos DESC, staff.last_name, staff.first_name",
+        (2, 4, 6, 8, 10, 12),
+    )
+    specs += _specs_for_values(
+        "customer-rental-left",
+        "Para cada cliente da loja {value}, informe o número de locações, incluindo quem não alugou.",
+        "SELECT customer.customer_id, customer.first_name, customer.last_name, COUNT(rental.rental_id) AS total_locacoes FROM customer LEFT JOIN rental ON rental.customer_id = customer.customer_id WHERE customer.store_id = {value} GROUP BY customer.customer_id, customer.first_name, customer.last_name ORDER BY total_locacoes DESC, customer.last_name, customer.first_name",
+        (1, 2),
+    )
+    specs += _specs_for_values(
+        "actor-category-membership",
+        "Quais atores participaram de filmes da categoria {value}?",
+        "SELECT DISTINCT actor.first_name, actor.last_name FROM actor JOIN film_actor ON film_actor.actor_id = actor.actor_id JOIN film_category ON film_category.film_id = film_actor.film_id JOIN category ON category.category_id = film_category.category_id WHERE category.name = '{value}' ORDER BY actor.last_name, actor.first_name",
+        ("Action", "Animation", "Comedy", "Documentary", "Family", "Horror", "Music", "Sports"),
+    )
+    specs += _specs_for_values(
+        "inventory-store-rating",
+        "Quantas cópias de filmes com classificação {value[0]} existem na loja {value[1]}?",
+        "SELECT inventory.store_id, COUNT(inventory.inventory_id) AS total_copias FROM inventory JOIN film ON film.film_id = inventory.film_id WHERE film.rating = '{value[0]}' AND inventory.store_id = {value[1]} GROUP BY inventory.store_id ORDER BY inventory.store_id",
+        [(rating, store) for rating in ("G", "PG", "PG-13", "R", "NC-17") for store in (1, 2)],
+    )
+    specs += _specs_for_values(
+        "staff-payment-range",
+        "Qual é o total de pagamentos entre {value[0]} e {value[1]} por funcionário?",
+        "SELECT staff.staff_id, staff.first_name, staff.last_name, ROUND(SUM(payment.amount), 2) AS total_pagamentos FROM staff JOIN payment ON payment.staff_id = staff.staff_id WHERE payment.amount BETWEEN {value[0]} AND {value[1]} GROUP BY staff.staff_id, staff.first_name, staff.last_name ORDER BY total_pagamentos DESC, staff.last_name, staff.first_name",
+        ((0, 3), (3, 6), (6, 9), (9, 12)),
+    )
+    specs += _specs_for_values(
+        "city-active-customer",
+        "Quais cidades têm clientes ativos e quantos são, para países iniciados por {value}?",
+        "SELECT city.city, COUNT(customer.customer_id) AS total_clientes_ativos FROM country JOIN city ON city.country_id = country.country_id JOIN address ON address.city_id = city.city_id JOIN customer ON customer.address_id = address.address_id WHERE country.country ILIKE '{value}%' AND customer.active = 1 GROUP BY city.city ORDER BY total_clientes_ativos DESC, city.city",
+        ("A", "B", "C", "D", "E", "F", "G", "I"),
+    )
+    specs += _specs_for_values(
+        "rental-by-day",
+        "Quantas locações foram iniciadas no dia {value} do mês?",
+        "SELECT DATE(LOWER(rental_period)) AS dia, COUNT(*) AS total_locacoes FROM rental WHERE EXTRACT(DAY FROM LOWER(rental_period)) = {value} GROUP BY DATE(LOWER(rental_period)) ORDER BY dia",
+        (1, 5, 10, 15, 20, 25, 30),
+    )
+    specs += _specs_for_values(
+        "film-description-order",
+        "Liste os {value} filmes com descrições mais longas entre os de classificação PG.",
+        "SELECT title, LENGTH(description) AS tamanho_descricao FROM film WHERE rating = 'PG' AND description IS NOT NULL ORDER BY tamanho_descricao DESC, title LIMIT {value}",
+        (3, 5, 8, 10),
+    )
+    specs += _specs_for_values(
+        "customer-list-country-view",
+        "Quais {value} clientes da view de clientes pertencem a países iniciados por A?",
+        "SELECT id, name, country FROM customer_list WHERE country ILIKE 'A%' ORDER BY name LIMIT {value}",
+        (3, 5, 8, 10),
+    )
+    specs += _specs_for_values(
+        "sales-category-view",
+        "Quais categorias da view de vendas por filme têm vendas totais acima de {value}?",
+        "SELECT category, total_sales FROM sales_by_film_category WHERE total_sales > {value} ORDER BY total_sales DESC, category",
+        (100, 300, 500, 700, 900),
+    )
+    specs += _specs_for_values(
+        "film-actor-alias",
+        "Quais títulos de filmes com classificação {value} têm atores cujo sobrenome começa por S?",
+        "SELECT DISTINCT f.title FROM film AS f JOIN film_actor AS fa ON fa.film_id = f.film_id JOIN actor AS a ON a.actor_id = fa.actor_id WHERE f.rating = '{value}' AND a.last_name ILIKE 'S%' ORDER BY f.title",
+        ("G", "PG", "PG-13", "R", "NC-17"),
+    )
     return specs
 
 

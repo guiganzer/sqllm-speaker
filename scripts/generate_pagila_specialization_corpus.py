@@ -1,4 +1,4 @@
-"""Gera e valida o corpus público Pagila para a fase 2 de especialização."""
+"""Gera e valida os corpora públicos Pagila para especialização incremental."""
 
 from __future__ import annotations
 
@@ -20,8 +20,20 @@ from llm_to_sql.agentic.pagila_tools import PagilaAgentTools
 from llm_to_sql.phase_02 import SYSTEM_PROMPT, build_specs, canonical_sql, corpus_fingerprint
 
 
-# A divisão é por família: uma estrutura de SQL nunca ocorre em treino e validação.
-VALIDATION_FAMILIES = frozenset({"actor-letter", "payment-amount-bands", "rental-duration"})
+# A divisão é por família: uma mesma estrutura de SQL não chega a treino e validação.
+VALIDATION_FAMILIES_BY_EDITION = {
+    "v1": frozenset({"actor-letter", "payment-amount-bands", "rental-duration"}),
+    "v2": frozenset(
+        {
+            "actor-letter",
+            "payment-amount-bands",
+            "rental-duration",
+            "staff-payment-left",
+            "rental-by-day",
+            "customer-list-country-view",
+        }
+    ),
+}
 
 
 def _messages(context: str, question: str, sql: str) -> list[dict[str, str]]:
@@ -45,10 +57,10 @@ def _internal_benchmark_sets() -> tuple[set[str], set[str]]:
     )
 
 
-def build_records(tools: PagilaAgentTools) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+def build_records(tools: PagilaAgentTools, *, edition: str) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     internal_questions, internal_sql = _internal_benchmark_sets()
     records: list[dict[str, Any]] = []
-    specs = build_specs()
+    specs = build_specs(edition)
     for spec in specs:
         normalized_question = " ".join(spec.question.lower().split())
         normalized_sql = canonical_sql(spec.sql)
@@ -86,12 +98,15 @@ def _write_jsonl(path: Path, rows: list[dict[str, Any]]) -> str:
     return digest.hexdigest()
 
 
-def generate(*, output: Path, tools: PagilaAgentTools) -> dict[str, Any]:
+def generate(*, output: Path, tools: PagilaAgentTools, edition: str = "v1") -> dict[str, Any]:
+    if edition not in VALIDATION_FAMILIES_BY_EDITION:
+        raise ValueError("edition deve ser v1 ou v2.")
     if output.exists():
         raise FileExistsError(f"A saída já existe para preservar reprodutibilidade: {output}")
-    records, guard = build_records(tools)
-    train = [record for record in records if record["family"] not in VALIDATION_FAMILIES]
-    validation = [record for record in records if record["family"] in VALIDATION_FAMILIES]
+    records, guard = build_records(tools, edition=edition)
+    validation_families = VALIDATION_FAMILIES_BY_EDITION[edition]
+    train = [record for record in records if record["family"] not in validation_families]
+    validation = [record for record in records if record["family"] in validation_families]
     if not train or not validation:
         raise RuntimeError("A divisão train/validation está vazia.")
     output.mkdir(parents=True)
@@ -100,6 +115,7 @@ def generate(*, output: Path, tools: PagilaAgentTools) -> dict[str, Any]:
     manifest = {
         "created_at_utc": datetime.now(UTC).isoformat(),
         "status": "validated",
+        "edition": edition,
         "dialect": "postgres",
         "database": tools.database,
         "container": tools.container,
@@ -107,7 +123,7 @@ def generate(*, output: Path, tools: PagilaAgentTools) -> dict[str, Any]:
         "generation": "parameterized-public-templates",
         "external_sakila_included": False,
         "frozen_internal_pagila_benchmark_included": False,
-        "validation_families": sorted(VALIDATION_FAMILIES),
+        "validation_families": sorted(validation_families),
         "train_examples": len(train),
         "validation_examples": len(validation),
         "families": sorted({record["family"] for record in records}),
@@ -126,6 +142,7 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument("--container", default="sqllm-pagila-postgres")
     parser.add_argument("--database", default="pagila")
     parser.add_argument("--label", default="pagila-v18-fc7a867-pt-v1")
+    parser.add_argument("--edition", choices=("v1", "v2"), default="v1")
     return parser.parse_args()
 
 
@@ -134,6 +151,7 @@ def main() -> None:
     result = generate(
         output=ROOT / "data" / "processed" / "phase-02" / arguments.label,
         tools=PagilaAgentTools(container=arguments.container, database=arguments.database),
+        edition=arguments.edition,
     )
     print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
 
