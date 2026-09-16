@@ -84,3 +84,8 @@ Para executar a avaliação pública ou a sessão agentic, inicie o Docker Deskt
 Não versione credenciais, tokens, modelos baixados, adapters treinados, resultados de consultas ou artefatos de execução. O executor usa uma conta dedicada somente leitura e aplica limites de consulta, tempo e linhas retornadas.
 
 A fonte de verdade para a continuidade do trabalho é [PROJECT_CONTEXT.md](PROJECT_CONTEXT.md). O histórico Git contém as decisões e entregas anteriores; cada experimento deve acrescentar seu manifesto versionado.
+
+
+## Treinamento de especialização Pagila
+
+A fase 2 está implementada e pronta para execução controlada. O corpus é gerado publicamente, validado por execução e separado dos benchmarks Pagila e Sakila. O treino continua o adapter da fase 1 em vez de criar um adapter do zero. Siga os comandos e critérios de continuidade no [runbook da fase 2](docs/runbooks/phase-02-pagila-specialization.md).

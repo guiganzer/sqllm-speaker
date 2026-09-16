@@ -101,3 +101,8 @@ Não combinar `b-mc2/sql-create-context` com `emdemor/sql-create-context-pt`, po
 - Código e comentários técnicos podem estar em inglês; documentação e interface devem permanecer em português do Brasil.
 - Não sobrescrever arquivos nem descartar alterações locais sem inspeção e autorização explícita.
 - Antes de um treino, registrar modelo-base, hash/revisão dos dados, hiperparâmetros, seed, métricas e local do adapter.
+
+
+## Estado da fase 2 — especialização Pagila
+
+A implementação da fase 2 está pronta para execução local: o gerador parametrizado em scripts/generate_pagila_specialization_corpus.py cria um corpus público em português, valida cada SQL no PostgreSQL Pagila sob sqllm_readonly, compila apenas o schema relevante e grava hashes em um manifesto. O treino está em scripts/train_phase_02_pagila.py e continua o adapter concluído da fase 1, sem reinicializar LoRA. As 24 perguntas Pagila congeladas e os 30 itens externos Sakila permanecem proibidos no treino; a divisão de validação é por família de SQL. Execute e retome pelo runbook docs/runbooks/phase-02-pagila-specialization.md.
