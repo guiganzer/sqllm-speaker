@@ -33,8 +33,3 @@ checkpoints/
 Thumbs.db
 .vscode/
 .idea/
-
-# Entrada privada da fase 2: versionar somente o marcador, nunca o conteúdo.
-!data/raw/private/
-data/raw/private/*
-!data/raw/private/.gitkeep
