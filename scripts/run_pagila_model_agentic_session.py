@@ -12,6 +12,7 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
+from llm_to_sql.agentic.candidate_ranker import rank_candidates
 from llm_to_sql.agentic.context_compiler import ContextCompilationError, compile_relations_context, validate_relation_scope
 from llm_to_sql.agentic.model_author import DEFAULT_MODEL_ID, DEFAULT_MODEL_REVISION, PhaseOneSqlAuthor
 from llm_to_sql.agentic.pagila_tools import PagilaAgentTools
@@ -31,6 +32,8 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument("--max-new-tokens", type=int, default=192)
     parser.add_argument("--max-context-characters", type=int, default=6_000)
     parser.add_argument("--max-rows", type=int, default=100)
+    parser.add_argument("--candidate-count", type=int, choices=range(1, 6), default=3)
+    parser.add_argument("--schema-detail", choices=("basic", "enriched"), default="enriched")
     parser.add_argument("--max-repairs", type=int, default=1, help="Máximo de correções após falha de escopo ou execução.")
     return parser.parse_args()
 
@@ -42,7 +45,7 @@ def selected_relations(value: str) -> tuple[str, ...]:
     return relations
 
 
-def result_payload(session, profile, context, candidates: list[str], execution=None) -> dict:
+def result_payload(session, profile, context, candidates: list[str], rankings: list[dict], execution=None) -> dict:
     payload = {
         "stage": session.stage,
         "reason": session.final_reason,
@@ -51,6 +54,7 @@ def result_payload(session, profile, context, candidates: list[str], execution=N
         "context_characters": context.characters,
         "context_relations": context.relations,
         "generated_candidates": candidates,
+        "candidate_rankings": rankings,
         "sql": session.sql,
         "repairs": session.repairs,
     }
@@ -66,7 +70,8 @@ def main() -> None:
     workflow = AgenticWorkflow(max_repairs=arguments.max_repairs)
     session = workflow.begin(arguments.question)
     profile = tools.get_database_profile()
-    schemas = {relation: tools.get_table_schema(relation) for relation in relations}
+    schema_lookup = tools.get_enriched_table_schema if arguments.schema_detail == "enriched" else tools.get_table_schema
+    schemas = {relation: schema_lookup(relation) for relation in relations}
     context = compile_relations_context(relations, schemas.__getitem__, max_characters=arguments.max_context_characters)
     workflow.add_schemas(session, schemas)
     author = PhaseOneSqlAuthor(
@@ -76,33 +81,52 @@ def main() -> None:
         max_new_tokens=arguments.max_new_tokens,
     )
     candidates: list[str] = []
+    rankings: list[dict] = []
     previous_candidate: str | None = None
     while session.stage is SessionStage.AWAITING_SQL:
-        candidate = author.generate(
+        generated = author.generate_candidates(
             session.question,
             context.ddl,
-            session.final_reason if session.repairs else None,
-            previous_candidate,
+            count=arguments.candidate_count,
+            repair_error=session.final_reason if session.repairs else None,
+            previous_sql=previous_candidate,
         )
-        candidates.append(candidate)
-        previous_candidate = candidate
-        try:
-            validate_relation_scope(candidate, context.relations)
-        except ContextCompilationError as error:
-            workflow.record_validation_failure(session, f"Guardião de schema: {error}")
+        candidates.extend(generated)
+        ranked = rank_candidates(session.question, generated)
+        rankings.extend(
+            {"sql": item.sql, "score": item.score, "reasons": item.reasons}
+            for item in ranked
+        )
+        candidate = None
+        scoped_candidates: list[str] = []
+        last_scope_error = None
+        for item in ranked:
+            try:
+                validate_relation_scope(item.sql, context.relations)
+                scoped_candidates.append(item.sql)
+                if tools.policy.validate(item.sql).allowed:
+                    candidate = item.sql
+                    break
+            except ContextCompilationError as error:
+                last_scope_error = error
+        if candidate is None and scoped_candidates:
+            candidate = scoped_candidates[0]
+        if candidate is None:
+            workflow.record_validation_failure(session, f"Guardião de schema: {last_scope_error}")
             if session.stage is SessionStage.BLOCKED:
-                print(json.dumps(result_payload(session, profile, context, candidates), ensure_ascii=False, indent=2, default=str))
+                print(json.dumps(result_payload(session, profile, context, candidates, rankings), ensure_ascii=False, indent=2, default=str))
                 return
             workflow.add_schemas(session, schemas)
             continue
+        previous_candidate = candidate
         policy = workflow.submit_sql(session, candidate)
         if not policy.allowed:
-            print(json.dumps(result_payload(session, profile, context, candidates), ensure_ascii=False, indent=2, default=str))
+            print(json.dumps(result_payload(session, profile, context, candidates, rankings), ensure_ascii=False, indent=2, default=str))
             return
         execution = tools.execute_readonly_sql(policy.normalized_sql or "", max_rows=arguments.max_rows)
         workflow.record_execution(session, succeeded=execution.error is None, sanitized_error=execution.error)
         if session.stage in (SessionStage.FINALIZED, SessionStage.BLOCKED):
-            print(json.dumps(result_payload(session, profile, context, candidates, execution), ensure_ascii=False, indent=2, default=str))
+            print(json.dumps(result_payload(session, profile, context, candidates, rankings, execution), ensure_ascii=False, indent=2, default=str))
             return
         workflow.add_schemas(session, schemas)
     raise RuntimeError(f"Estado inesperado da sessão: {session.stage}")

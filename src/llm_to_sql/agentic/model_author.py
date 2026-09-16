@@ -72,6 +72,25 @@ class PhaseOneSqlAuthor:
         repair_error: str | None = None,
         previous_sql: str | None = None,
     ) -> str:
+        return self.generate_candidates(
+            question,
+            schema_ddl,
+            count=1,
+            repair_error=repair_error,
+            previous_sql=previous_sql,
+        )[0]
+
+    def generate_candidates(
+        self,
+        question: str,
+        schema_ddl: str,
+        *,
+        count: int = 3,
+        repair_error: str | None = None,
+        previous_sql: str | None = None,
+    ) -> list[str]:
+        if not 1 <= count <= 5:
+            raise ValueError("count deve estar entre 1 e 5.")
         model, tokenizer = self._load()
         prompt = render_author_prompt(tokenizer, build_author_messages(question, schema_ddl, repair_error, previous_sql))
         encoded = tokenizer(prompt, return_tensors="pt")
@@ -83,12 +102,22 @@ class PhaseOneSqlAuthor:
                 **encoded,
                 max_new_tokens=self.max_new_tokens,
                 do_sample=False,
+                num_beams=count,
+                num_return_sequences=count,
+                early_stopping=count > 1,
                 pad_token_id=tokenizer.pad_token_id,
                 eos_token_id=tokenizer.eos_token_id,
             )
         prompt_length = encoded["input_ids"].shape[1]
-        raw_output = tokenizer.decode(generated[0][prompt_length:], skip_special_tokens=True).strip()
-        return normalize_model_output(raw_output)
+        candidates: list[str] = []
+        for sequence in generated:
+            raw_output = tokenizer.decode(sequence[prompt_length:], skip_special_tokens=True).strip()
+            normalized = normalize_model_output(raw_output)
+            if normalized and normalized not in candidates:
+                candidates.append(normalized)
+        if not candidates:
+            raise RuntimeError("O autor não produziu candidato SQL.")
+        return candidates
 
     def _load(self):
         if self._model is not None and self._tokenizer is not None:
