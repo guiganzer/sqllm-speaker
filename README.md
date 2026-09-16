@@ -94,3 +94,8 @@ A fase 2 está implementada e pronta para execução controlada. O corpus é ger
 ## Resultado da especialização Pagila v1
 
 A primeira especialização Pagila foi concluída e medida no benchmark congelado: execução passou de 66,67% para 91,67%, resultados idênticos de 4,17% para 12,50% e exact match canônico de 0% para 4,17%. A conformidade de escopo caiu de 100% para 95,83%, por isso a próxima iteração ampliará o corpus relacional antes de qualquer uso autônomo. Consulte o [manifesto do experimento](docs/experiment-manifests/phase-02-pagila-v1-2026-09-16.md).
+
+
+## Resultado Pagila v2
+
+A especialização incremental v2 preservou 91,67% de SQL executado e aumentou equivalência de resultado para 20,83% (5/24), contra 12,50% da v1 e 4,17% antes da especialização. O runtime agentic e suas barreiras de segurança permanecem obrigatórios. Veja o [manifesto v2](docs/experiment-manifests/phase-02-pagila-v2-2026-09-16.md).

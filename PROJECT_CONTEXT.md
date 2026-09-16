@@ -116,3 +116,8 @@ A especialização QLoRA Pagila v1 foi concluída a partir do adapter geral da f
 ## Preparação fase 2 Pagila v2 — 16 de setembro de 2026
 
 O corpus incremental v2 foi preparado e validado no Pagila público: 212 exemplos, 165 em treino e 47 em validação; fingerprint 71ae988b0fefdb4f7a149d743ff6cc463e63eacf23dd916e955beec9e84f4e94. Ele continua a v1 com famílias de joins explícitos e externos, aliases, ordenação, limites e views, mantendo o benchmark interno e a suíte Sakila fora do treino. O smoke e o treino estão documentados em docs/runbooks/phase-02-pagila-v2.md.
+
+
+## Resultado fase 2 Pagila v2 — 16 de setembro de 2026
+
+A v2 continuou o adapter Pagila v1 com 212 exemplos públicos validados (165 treino, 47 validação). No benchmark congelado, preservou 22/24 SQLs executados e elevou resultados idênticos de 3/24 para 5/24. Parse e escopo permanecem em 23/24. Ela é o candidato ativo para inferência experimental, ainda protegido pelo runtime agentic; a próxima melhoria deve focar reparo orientado por execução e geração estruturada. Consulte docs/experiment-manifests/phase-02-pagila-v2-2026-09-16.md.
