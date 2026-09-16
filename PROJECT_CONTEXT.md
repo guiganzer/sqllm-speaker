@@ -73,13 +73,13 @@ Implicação: o alvo local é ajuste fino QLoRA em 4-bit. Para o fluxo agentic, 
 
 Não combinar `b-mc2/sql-create-context` com `emdemor/sql-create-context-pt`, pois o segundo é sua tradução e duplicaria os exemplos.
 
-## Estado atual — 15 de setembro de 2026
+## Estado atual — 16 de setembro de 2026
 
 - Repositório Git inicializado na branch `main` e espelhado publicamente em https://github.com/guiganzer/sqllm-speaker.
 - Estrutura de pastas, documentação e configuração-exemplo criadas.
 - A base determinística do runtime agentic foi criada em `src/llm_to_sql/agentic/`, com testes padrão do Python criados em `tests/`.
 - Projeto uv configurado com Python 3.11 fixado em `.python-version`, dependências em `.venv` e lockfile `uv.lock`.
-- Os 38 testes automatizados passam via `uv run python -m unittest discover -s tests -t . -v`.
+- Os 59 testes automatizados passam via `uv run python -m unittest discover -s tests -t . -v`.
 - O dataset da fase 1 foi preparado localmente: 78.577 linhas de origem, 78.389 aceitas, 70.551 em treino e 7.838 em validação. Foram rejeitadas 187 consultas que não fizeram parse e 1 exemplo acima do limite de caracteres.
 - A GPU passou no preflight PyTorch: RTX 4070 Laptop, CUDA 12.8, BF16 e 8 GiB de VRAM. Dependências de QLoRA/SFT foram adicionadas ao `.venv` e fixadas pelo `uv.lock`.
 - O smoke test QLoRA da fase 1 foi aprovado na GPU: 5 passos em 43,112 s, perda de treino 1,6972 e perda de validação 0,4041. O adapter local e o manifesto ignorado pelo Git estão em `artifacts/runs/phase-01-smoke-768f209d9ea8/`; o resumo versionado está em `docs/experiment-manifests/phase-01-smoke-2026-09-15.md`.
@@ -125,4 +125,11 @@ A v2 continuou o adapter Pagila v1 com 212 exemplos públicos validados (165 tre
 
 ## Runtime de reparo agentic — 16 de setembro de 2026
 
-Após a especialização v2, o runtime ganhou um reparo estruturado limitado: falhas de escopo e de execução podem receber uma única nova proposta com a SQL anterior, erro sanitizado e exatamente o mesmo schema. Falhas de política continuam bloqueadas. O adapter experimental padrão da sessão Pagila é phase-02-pagila-v2-768f209d9ea8. A implementação tem cobertura na suíte de 50 testes e o uso está em docs/runbooks/pagila-agentic-repair.md.
+Após a especialização v2, o runtime ganhou um reparo estruturado limitado: falhas de escopo e de execução podem receber uma única nova proposta com a SQL anterior, erro sanitizado e exatamente o mesmo schema. Falhas de política continuam bloqueadas. O adapter experimental padrão da sessão Pagila é phase-02-pagila-v2-768f209d9ea8. A implementação tem cobertura na suíte de 59 testes e o uso está em docs/runbooks/pagila-agentic-repair.md.
+
+
+## Preparação Pagila v3 — 16 de setembro de 2026
+
+A v3 mantém o modelo Qwen/Qwen3-4B-Thinking-2507 e continua o adapter v2; comparação entre modelos foi adiada. O corpus oficial tem 2.066 perguntas PT-BR, 1.579 exemplos de treino, 487 de validação, 40 famílias e 795 SQLs únicas executadas sob sqllm_readonly. O fingerprint é 3a4a4b93d6f6638ee5576945b60cddb84bc557e0f7ab55b6bf39f4bcb794a7c7. O contexto pagila-enriched-v1 inclui PK, FK, cardinalidade e hints categóricos de lista pública permitida, preservando o contexto antigo para reproduzir v1/v2. O runtime agora aceita beam search de até cinco candidatos e ranking semântico determinístico; todas as barreiras anteriores continuam ativas.
+
+A linha de base estrutural da v2 nas 24 perguntas é: relações e agregações 95,83%; limite 87,50%; predicados 75%; agrupamento 54,17%; joins 50%; projeção 29,17%; ordenação 25%. Assim, o objetivo explícito da v3 é melhorar estrutura semântica, e não apenas perda de validação. Arquivos locais, comandos de treino e critérios estão em docs/runbooks/phase-03-pagila-v3.md; o manifesto versionado está em docs/data-manifests/pagila-v3-corpus-2026-09-16.md. O treino v3 ainda não foi iniciado.

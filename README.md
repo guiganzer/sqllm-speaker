@@ -41,12 +41,12 @@ A qualidade pré-especialização foi congelada e repetida no [benchmark do auto
 
 A validação externa de terceiros foi adicionada em [external-sakila-validation.md](docs/runbooks/external-sakila-validation.md): os 30 gabaritos MIT do Sakila foram transpostos de MySQL para PostgreSQL/Pagila e todos executaram sob a conta somente leitura. Ela é bloqueada para treino e não substitui a métrica PT-BR do Pagila.
 
-Próximas implementações, nesta ordem:
+Próximas ações, nesta ordem:
 
-1. Gerar um corpus público Pagila de especialização, separado das 24 perguntas congeladas do benchmark.
-2. Validar por execução, deduplicar e registrar o manifesto desse corpus.
-3. Treinar o adapter QLoRA Pagila e repetir o benchmark com o mesmo contrato.
-4. Exibir os deltas com o comparador versionado e, só então, evoluir a seleção autônoma de relações pelo especialista de schema.
+1. Executar o smoke da v3 continuando o adapter v2.
+2. Treinar por duas épocas com taxa de aprendizado reduzida.
+3. Repetir as 24 perguntas congeladas sob o contrato básico de candidato único.
+4. Comparar resultado executado e componentes SQL com a linha de base v2.
 
 ## Retomada rápida
 
@@ -99,3 +99,10 @@ A primeira especialização Pagila foi concluída e medida no benchmark congelad
 ## Resultado Pagila v2
 
 A especialização incremental v2 preservou 91,67% de SQL executado e aumentou equivalência de resultado para 20,83% (5/24), contra 12,50% da v1 e 4,17% antes da especialização. O runtime agentic e suas barreiras de segurança permanecem obrigatórios. Veja o [manifesto v2](docs/experiment-manifests/phase-02-pagila-v2-2026-09-16.md).
+
+
+## Pagila v3 preparada
+
+A iteração v3 permanece no modelo atual e ataca o gargalo semântico. Foram geradas 2.066 perguntas PT-BR em 40 famílias, com 795 SQLs distintas validadas no Pagila somente leitura. O schema fornecido ao treino passa a incluir PK, FK, cardinalidade e hints categóricos públicos controlados. O runtime também ganhou geração de múltiplos candidatos e ranking determinístico, mantendo escopo, política e reparo limitado.
+
+O baseline por componentes mostra onde medir o ganho: projeção 29,17%, ordenação 25%, joins 50% e agrupamento 54,17%. Consulte o [runbook da v3](docs/runbooks/phase-03-pagila-v3.md) para os comandos de smoke, treino e avaliação, e o [manifesto do corpus](docs/data-manifests/pagila-v3-corpus-2026-09-16.md) para hashes e isolamento.
