@@ -35,13 +35,14 @@ A política e as transições são código determinístico. O runtime Pagila obt
 
 O Pagila está carregado localmente em PostgreSQL 18 e validado com 23 tabelas, 1.000 filmes descritivos e 16.044 locações. Consulte o [manifesto](docs/data-manifests/pagila-v18-fc7a867.md), o [runtime local](docs/runbooks/pagila-local-runtime.md), a [avaliação pública](docs/runbooks/pagila-public-evaluation.md) e o [estudo de candidatos](docs/research/public-descriptive-databases.md).
 
+O compilador de contexto já está disponível em [pagila-context-compiler.md](docs/runbooks/pagila-context-compiler.md): ele fornece somente as relações usadas na consulta e recusa ultrapassar o orçamento do prompt.
+
 Próximas implementações, nesta ordem:
 
-1. Compilar contexto compacto de schema para cada consulta Pagila.
+1. Conectar o adapter treinado como autor SQL da sessão agentic.
 2. Ampliar a avaliação pública gerada e validada por execução.
-3. Conectar o adapter treinado como autor SQL da sessão agentic.
-4. Preparar especialização QLoRA com exemplos públicos gerados e executados no Pagila.
-5. Comparar o adapter especializado, o adapter da fase 1 e o baseline no benchmark público congelado e na avaliação Pagila.
+3. Preparar especialização QLoRA com exemplos públicos gerados e executados no Pagila.
+4. Comparar o adapter especializado, o adapter da fase 1 e o baseline no benchmark público congelado e na avaliação Pagila.
 
 ## Retomada rápida
 
