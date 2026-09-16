@@ -99,7 +99,7 @@ def build_specs() -> list[SpecializationSpec]:
     specs += _specs_for_values(
         "customer-store-active",
         "Quantos clientes ativos existem na loja {value}?",
-        "SELECT COUNT(*) AS total_clientes_ativos FROM customer WHERE store_id = {value} AND active = true",
+        "SELECT COUNT(*) AS total_clientes_ativos FROM customer WHERE store_id = {value} AND active = 1",
         (1, 2),
     )
     specs += _specs_for_values(

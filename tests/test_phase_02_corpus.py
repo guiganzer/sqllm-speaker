@@ -29,6 +29,10 @@ class PhaseTwoCorpusTests(unittest.TestCase):
             self.assertNotIn(" ".join(spec.question.lower().split()), benchmark_questions)
             self.assertNotIn(canonical_sql(spec.sql), benchmark_sql)
 
+    def test_uses_pagila_smallint_active_flag(self) -> None:
+        active_specs = [spec for spec in build_specs() if spec.family == "customer-store-active"]
+        self.assertEqual(len(active_specs), 2)
+        self.assertTrue(all("active = 1" in spec.sql for spec in active_specs))
     def test_split_is_by_family_and_nonempty(self) -> None:
         families = {spec.family for spec in build_specs()}
         self.assertTrue(VALIDATION_FAMILIES)
