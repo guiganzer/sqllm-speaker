@@ -110,3 +110,7 @@ O baseline por componentes mostra onde medir o ganho: projeção 29,17%, ordena�
 ## Treino Pagila v3 concluído
 
 O adapter v3 concluiu duas épocas e 198 passos com perda final de validação 0,203507 e 59/59 testes aprovados. A curva permaneceu estável e monotonicamente melhor, mas a promoção depende do benchmark congelado de 24 perguntas. Veja o [manifesto do treino v3](docs/experiment-manifests/phase-03-pagila-v3-2026-09-16.md).
+
+## Avaliação v3: ganho especializado, regressão geral
+
+A v3 melhorou o Pagila: 24/24 em parse/escopo, 22/24 executadas e 8/24 resultados idênticos, contra 5/24 na v2. Porém, no benchmark geral de 512 schemas, conformidade ao schema caiu de 98,05% para 88,67% e exact match de 64,06% para 46,09%. Por isso, a v3 não foi promovida como adapter universal. A próxima iteração deve introduzir replay geral estratificado e atacar joins/projeções restantes. Veja a [avaliação completa](docs/experiment-manifests/phase-03-pagila-v3-evaluation-2026-09-16.md).

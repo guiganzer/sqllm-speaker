@@ -89,3 +89,8 @@ uv run python scripts/analyze_pagila_sql_components.py --predictions artifacts/e
 ```
 
 Critério de avanço: preservar parse/escopo e execução da v2, superar 5/24 resultados idênticos e melhorar principalmente projeção, ordenação, joins e agrupamento.
+
+
+## Resultado e decisão
+
+A v3 atingiu 24/24 parse/escopo, 22/24 execução, 8/24 resultados idênticos e 2/24 exact match no Pagila. Apesar do ganho especializado, o benchmark geral caiu para 88,67% de referências válidas ao schema e 46,09% de exact match. A v3 permanece candidata especializada e não substitui o padrão universal. A próxima iteração deve usar replay geral estratificado; não executar mais épocas apenas sobre o corpus v3.

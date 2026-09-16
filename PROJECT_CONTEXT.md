@@ -137,3 +137,9 @@ A linha de base estrutural da v2 nas 24 perguntas é: relações e agregações 
 ## Resultado do treino Pagila v3 — 16 de setembro de 2026
 
 O treino v3 foi concluído a partir do adapter v2: 1.579 exemplos de treino, 487 de validação por famílias, duas épocas e 198 passos. A perda média de treino foi 0,010463 e a perda final de validação 0,203507. A curva de validação melhorou de 0,222756 no passo 50 para 0,203507 no passo 198, sem reversão ou instabilidade; 59/59 testes passaram. O adapter phase-03-pagila-v3-768f209d9ea8 está tecnicamente liberado para o benchmark congelado, mas não promovido. Consulte docs/experiment-manifests/phase-03-pagila-v3-2026-09-16.md.
+
+## Avaliação Pagila v3 e regressão geral — 16 de setembro de 2026
+
+No benchmark Pagila congelado, a v3 passou de 23/24 para 24/24 em parse/escopo, preservou 22/24 execuções, elevou resultados idênticos de 5/24 para 8/24 e exact match de 1/24 para 2/24. Agrupamento melhorou de 13/24 para 17/24 e ordenação de 6/24 para 11/24; joins caiu de 12/24 para 9/24 e projeção de 7/24 para 5/24.
+
+O benchmark geral congelado de 512 schemas revelou regressão material: referências válidas ao schema caíram de 502/512 (98,05%) para 454/512 (88,67%) e exact match de 328/512 (64,06%) para 236/512 (46,09%). Parse, saída SQL e política permaneceram em 100%. Assim, a v3 é candidata especializada Pagila, não substituta universal; o padrão permanece v2 e o adapter geral da fase 1 é preservado. A próxima iteração precisa de replay geral estratificado e exemplos direcionados aos erros restantes. Consulte docs/experiment-manifests/phase-03-pagila-v3-evaluation-2026-09-16.md.
