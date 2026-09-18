@@ -1,0 +1,47 @@
+{
+  "id": "schema-relation-curriculum-v1",
+  "relation_tier_distribution": {
+    "small": 0.60,
+    "medium": 0.25,
+    "heavy": 0.15
+  },
+  "rules": [
+    "Cada exemplo recebe somente o relation pack necessário.",
+    "Toda SQL deve fazer parse, respeitar o pack e executar no banco de validação.",
+    "Exemplos de benchmark permanecem proibidos no treino.",
+    "Joins pesados devem representar uma pergunta útil, nunca complexidade artificial.",
+    "Cada rodada preserva replay geral para reduzir esquecimento catastrófico."
+  ],
+  "rounds": [
+    {
+      "round": 1,
+      "focus": "Fundação geral normalizada",
+      "data": ["WikiSQL normalizado para o contrato schema+pergunta", "replay estratificado da fase 1"],
+      "initial_adapter": "phase-01-general-e1"
+    },
+    {
+      "round": 2,
+      "focus": "Relações pequenas",
+      "data": ["Olist small", "Logistics small", "replay geral"],
+      "initial_adapter": "melhor candidato aprovado da rodada anterior"
+    },
+    {
+      "round": 3,
+      "focus": "Relações médias, FKs e tempo",
+      "data": ["Olist medium", "Logistics medium", "replay geral"],
+      "initial_adapter": "melhor candidato aprovado da rodada anterior"
+    },
+    {
+      "round": 4,
+      "focus": "Relações pesadas e reparo contrastivo",
+      "data": ["Olist heavy", "Logistics heavy", "erros corrigidos", "replay geral"],
+      "initial_adapter": "melhor candidato aprovado da rodada anterior"
+    },
+    {
+      "round": 5,
+      "focus": "Consolidação balanceada",
+      "data": ["mistura estratificada das rodadas 1 a 4", "replay geral ampliado"],
+      "initial_adapter": "melhor candidato aprovado da rodada anterior"
+    }
+  ]
+}

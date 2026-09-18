@@ -1,0 +1,257 @@
+{
+  "name": "olist",
+  "dialect": "sqlite",
+  "database_path": "data/raw/kaggle__terencicp__olist-sqlite/olist.sqlite",
+  "source": {
+    "role": "canonical_public_csv",
+    "path": "data/raw/brazilian-ecommerce-public-dataset-olist",
+    "provider": "Olist",
+    "license": "CC BY-NC-SA 4.0",
+    "files": [
+      "olist_customers_dataset.csv",
+      "olist_geolocation_dataset.csv",
+      "olist_order_items_dataset.csv",
+      "olist_order_payments_dataset.csv",
+      "olist_order_reviews_dataset.csv",
+      "olist_orders_dataset.csv",
+      "olist_products_dataset.csv",
+      "olist_sellers_dataset.csv",
+      "product_category_name_translation.csv"
+    ],
+    "execution_mirror": "data/raw/kaggle__terencicp__olist-sqlite/olist.sqlite"
+  },
+  "tables": {
+    "customers": {
+      "columns": [
+        {"name": "customer_id", "type": "TEXT"},
+        {"name": "customer_unique_id", "type": "TEXT"},
+        {"name": "customer_zip_code_prefix", "type": "INTEGER"},
+        {"name": "customer_city", "type": "TEXT"},
+        {"name": "customer_state", "type": "TEXT"}
+      ],
+      "primary_key": ["customer_id"]
+    },
+    "geolocation": {
+      "columns": [
+        {"name": "geolocation_zip_code_prefix", "type": "INTEGER"},
+        {"name": "geolocation_lat", "type": "REAL"},
+        {"name": "geolocation_lng", "type": "REAL"},
+        {"name": "geolocation_city", "type": "TEXT"},
+        {"name": "geolocation_state", "type": "TEXT"}
+      ],
+      "primary_key": []
+    },
+    "order_items": {
+      "columns": [
+        {"name": "order_id", "type": "TEXT"},
+        {"name": "order_item_id", "type": "INTEGER"},
+        {"name": "product_id", "type": "TEXT"},
+        {"name": "seller_id", "type": "TEXT"},
+        {"name": "shipping_limit_date", "type": "TEXT"},
+        {"name": "price", "type": "REAL"},
+        {"name": "freight_value", "type": "REAL"}
+      ],
+      "primary_key": ["order_id", "order_item_id"]
+    },
+    "order_payments": {
+      "columns": [
+        {"name": "order_id", "type": "TEXT"},
+        {"name": "payment_sequential", "type": "INTEGER"},
+        {"name": "payment_type", "type": "TEXT"},
+        {"name": "payment_installments", "type": "INTEGER"},
+        {"name": "payment_value", "type": "REAL"}
+      ],
+      "primary_key": ["order_id", "payment_sequential"]
+    },
+    "order_reviews": {
+      "columns": [
+        {"name": "review_id", "type": "TEXT"},
+        {"name": "order_id", "type": "TEXT"},
+        {"name": "review_score", "type": "INTEGER"},
+        {"name": "review_comment_title", "type": "TEXT"},
+        {"name": "review_comment_message", "type": "TEXT"},
+        {"name": "review_creation_date", "type": "TEXT"},
+        {"name": "review_answer_timestamp", "type": "TEXT"}
+      ],
+      "primary_key": ["review_id", "order_id"]
+    },
+    "orders": {
+      "columns": [
+        {"name": "order_id", "type": "TEXT"},
+        {"name": "customer_id", "type": "TEXT"},
+        {"name": "order_status", "type": "TEXT"},
+        {"name": "order_purchase_timestamp", "type": "TEXT"},
+        {"name": "order_approved_at", "type": "TEXT"},
+        {"name": "order_delivered_carrier_date", "type": "TEXT"},
+        {"name": "order_delivered_customer_date", "type": "TEXT"},
+        {"name": "order_estimated_delivery_date", "type": "TEXT"}
+      ],
+      "primary_key": ["order_id"]
+    },
+    "products": {
+      "columns": [
+        {"name": "product_id", "type": "TEXT"},
+        {"name": "product_category_name", "type": "TEXT"},
+        {"name": "product_name_lenght", "type": "REAL"},
+        {"name": "product_description_lenght", "type": "REAL"},
+        {"name": "product_photos_qty", "type": "REAL"},
+        {"name": "product_weight_g", "type": "REAL"},
+        {"name": "product_length_cm", "type": "REAL"},
+        {"name": "product_height_cm", "type": "REAL"},
+        {"name": "product_width_cm", "type": "REAL"}
+      ],
+      "primary_key": ["product_id"]
+    },
+    "sellers": {
+      "columns": [
+        {"name": "seller_id", "type": "TEXT"},
+        {"name": "seller_zip_code_prefix", "type": "INTEGER"},
+        {"name": "seller_city", "type": "TEXT"},
+        {"name": "seller_state", "type": "TEXT"}
+      ],
+      "primary_key": ["seller_id"]
+    },
+    "product_category_name_translation": {
+      "columns": [
+        {"name": "product_category_name", "type": "TEXT"},
+        {"name": "product_category_name_english", "type": "TEXT"}
+      ],
+      "primary_key": ["product_category_name"]
+    }
+  },
+  "relationships": [
+    {
+      "from_table": "orders",
+      "from_columns": ["customer_id"],
+      "to_table": "customers",
+      "to_columns": ["customer_id"],
+      "kind": "hard"
+    },
+    {
+      "from_table": "order_items",
+      "from_columns": ["order_id"],
+      "to_table": "orders",
+      "to_columns": ["order_id"],
+      "kind": "hard"
+    },
+    {
+      "from_table": "order_items",
+      "from_columns": ["product_id"],
+      "to_table": "products",
+      "to_columns": ["product_id"],
+      "kind": "hard"
+    },
+    {
+      "from_table": "order_items",
+      "from_columns": ["seller_id"],
+      "to_table": "sellers",
+      "to_columns": ["seller_id"],
+      "kind": "hard"
+    },
+    {
+      "from_table": "order_payments",
+      "from_columns": ["order_id"],
+      "to_table": "orders",
+      "to_columns": ["order_id"],
+      "kind": "hard"
+    },
+    {
+      "from_table": "order_reviews",
+      "from_columns": ["order_id"],
+      "to_table": "orders",
+      "to_columns": ["order_id"],
+      "kind": "hard"
+    },
+    {
+      "from_table": "products",
+      "from_columns": ["product_category_name"],
+      "to_table": "product_category_name_translation",
+      "to_columns": ["product_category_name"],
+      "kind": "soft",
+      "note": "Há categorias nulas ou sem tradução; prefira LEFT JOIN quando a pergunta exigir preservar todos os produtos."
+    },
+    {
+      "from_table": "customers",
+      "from_columns": ["customer_zip_code_prefix"],
+      "to_table": "geolocation",
+      "to_columns": ["geolocation_zip_code_prefix"],
+      "kind": "soft",
+      "note": "O CEP não é único em geolocation; agregue ou deduplique geolocation antes do join."
+    },
+    {
+      "from_table": "sellers",
+      "from_columns": ["seller_zip_code_prefix"],
+      "to_table": "geolocation",
+      "to_columns": ["geolocation_zip_code_prefix"],
+      "kind": "soft",
+      "note": "O CEP não é único em geolocation; agregue ou deduplique geolocation antes do join."
+    }
+  ],
+  "packs": {
+    "customers-orders": {
+      "tier": "small",
+      "tables": ["customers", "orders"],
+      "purpose": "Pedidos, estados e datas por cliente."
+    },
+    "orders-payments": {
+      "tier": "small",
+      "tables": ["orders", "order_payments"],
+      "purpose": "Pagamentos, parcelas e valores por pedido."
+    },
+    "orders-reviews": {
+      "tier": "small",
+      "tables": ["orders", "order_reviews"],
+      "purpose": "Avaliações e comentários por pedido."
+    },
+    "items-products": {
+      "tier": "small",
+      "tables": ["order_items", "products"],
+      "purpose": "Itens vendidos e atributos de produto."
+    },
+    "items-sellers": {
+      "tier": "small",
+      "tables": ["order_items", "sellers"],
+      "purpose": "Itens vendidos por vendedor."
+    },
+    "catalog-translation": {
+      "tier": "small",
+      "tables": ["products", "product_category_name_translation"],
+      "purpose": "Produtos e tradução de categoria."
+    },
+    "commerce-core": {
+      "tier": "medium",
+      "tables": ["customers", "orders", "order_items", "products", "sellers"],
+      "purpose": "Fluxo comercial de cliente até produto e vendedor."
+    },
+    "order-finance": {
+      "tier": "medium",
+      "tables": ["customers", "orders", "order_items", "order_payments"],
+      "purpose": "Receita, frete e pagamentos por cliente ou pedido."
+    },
+    "customer-experience": {
+      "tier": "medium",
+      "tables": ["customers", "orders", "order_payments", "order_reviews"],
+      "purpose": "Experiência do cliente relacionada a pagamento e avaliação."
+    },
+    "catalog-sales": {
+      "tier": "medium",
+      "tables": ["orders", "order_items", "products", "product_category_name_translation"],
+      "purpose": "Vendas por produto e categoria traduzida."
+    },
+    "geo-fulfillment": {
+      "tier": "medium",
+      "tables": ["customers", "orders", "order_items", "sellers", "geolocation"],
+      "purpose": "Fluxo entre localizações de clientes e vendedores com geolocalização deduplicada."
+    },
+    "commerce-end-to-end": {
+      "tier": "heavy",
+      "tables": ["customers", "orders", "order_items", "products", "sellers", "order_payments", "order_reviews", "product_category_name_translation"],
+      "purpose": "Análises completas de venda, pagamento, produto, vendedor e satisfação."
+    },
+    "commerce-geospatial": {
+      "tier": "heavy",
+      "tables": ["customers", "orders", "order_items", "products", "sellers", "order_payments", "order_reviews", "geolocation"],
+      "purpose": "Análises completas com dimensão geográfica deduplicada."
+    }
+  }
+}

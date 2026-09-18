@@ -1,0 +1,281 @@
+{
+  "name": "logistics",
+  "dialect": "postgres",
+  "database_path": null,
+  "source": {
+    "role": "canonical_public_csv",
+    "path": "data/raw/kaggle__yogape__logistics-operations",
+    "provider": "Kaggle: yogape/logistics-operations-database",
+    "files": [
+      "customers.csv",
+      "delivery_events.csv",
+      "driver_monthly_metrics.csv",
+      "drivers.csv",
+      "facilities.csv",
+      "fuel_purchases.csv",
+      "loads.csv",
+      "maintenance_records.csv",
+      "routes.csv",
+      "safety_incidents.csv",
+      "trailers.csv",
+      "trips.csv",
+      "truck_utilization_metrics.csv",
+      "trucks.csv"
+    ]
+  },
+  "tables": {
+    "customers": {
+      "columns": [
+        {"name": "customer_id", "type": "TEXT"},
+        {"name": "customer_name", "type": "TEXT"},
+        {"name": "customer_type", "type": "TEXT"},
+        {"name": "credit_terms_days", "type": "INTEGER"},
+        {"name": "primary_freight_type", "type": "TEXT"},
+        {"name": "account_status", "type": "TEXT"},
+        {"name": "contract_start_date", "type": "DATE"},
+        {"name": "annual_revenue_potential", "type": "NUMERIC"}
+      ],
+      "primary_key": ["customer_id"]
+    },
+    "delivery_events": {
+      "columns": [
+        {"name": "event_id", "type": "TEXT"},
+        {"name": "load_id", "type": "TEXT"},
+        {"name": "trip_id", "type": "TEXT"},
+        {"name": "event_type", "type": "TEXT"},
+        {"name": "facility_id", "type": "TEXT"},
+        {"name": "scheduled_datetime", "type": "TIMESTAMP"},
+        {"name": "actual_datetime", "type": "TIMESTAMP"},
+        {"name": "detention_minutes", "type": "INTEGER"},
+        {"name": "on_time_flag", "type": "BOOLEAN"},
+        {"name": "location_city", "type": "TEXT"},
+        {"name": "location_state", "type": "TEXT"}
+      ],
+      "primary_key": ["event_id"]
+    },
+    "driver_monthly_metrics": {
+      "columns": [
+        {"name": "driver_id", "type": "TEXT"},
+        {"name": "month", "type": "DATE"},
+        {"name": "trips_completed", "type": "INTEGER"},
+        {"name": "total_miles", "type": "NUMERIC"},
+        {"name": "total_revenue", "type": "NUMERIC"},
+        {"name": "average_mpg", "type": "NUMERIC"},
+        {"name": "total_fuel_gallons", "type": "NUMERIC"},
+        {"name": "on_time_delivery_rate", "type": "NUMERIC"},
+        {"name": "average_idle_hours", "type": "NUMERIC"}
+      ],
+      "primary_key": ["driver_id", "month"]
+    },
+    "drivers": {
+      "columns": [
+        {"name": "driver_id", "type": "TEXT"},
+        {"name": "first_name", "type": "TEXT"},
+        {"name": "last_name", "type": "TEXT"},
+        {"name": "hire_date", "type": "DATE"},
+        {"name": "termination_date", "type": "DATE"},
+        {"name": "license_number", "type": "TEXT"},
+        {"name": "license_state", "type": "TEXT"},
+        {"name": "date_of_birth", "type": "DATE"},
+        {"name": "home_terminal", "type": "TEXT"},
+        {"name": "employment_status", "type": "TEXT"},
+        {"name": "cdl_class", "type": "TEXT"},
+        {"name": "years_experience", "type": "INTEGER"}
+      ],
+      "primary_key": ["driver_id"]
+    },
+    "facilities": {
+      "columns": [
+        {"name": "facility_id", "type": "TEXT"},
+        {"name": "facility_name", "type": "TEXT"},
+        {"name": "facility_type", "type": "TEXT"},
+        {"name": "city", "type": "TEXT"},
+        {"name": "state", "type": "TEXT"},
+        {"name": "latitude", "type": "NUMERIC"},
+        {"name": "longitude", "type": "NUMERIC"},
+        {"name": "dock_doors", "type": "INTEGER"},
+        {"name": "operating_hours", "type": "TEXT"}
+      ],
+      "primary_key": ["facility_id"]
+    },
+    "fuel_purchases": {
+      "columns": [
+        {"name": "fuel_purchase_id", "type": "TEXT"},
+        {"name": "trip_id", "type": "TEXT"},
+        {"name": "truck_id", "type": "TEXT"},
+        {"name": "driver_id", "type": "TEXT"},
+        {"name": "purchase_date", "type": "DATE"},
+        {"name": "location_city", "type": "TEXT"},
+        {"name": "location_state", "type": "TEXT"},
+        {"name": "gallons", "type": "NUMERIC"},
+        {"name": "price_per_gallon", "type": "NUMERIC"},
+        {"name": "total_cost", "type": "NUMERIC"},
+        {"name": "fuel_card_number", "type": "TEXT"}
+      ],
+      "primary_key": ["fuel_purchase_id"]
+    },
+    "loads": {
+      "columns": [
+        {"name": "load_id", "type": "TEXT"},
+        {"name": "customer_id", "type": "TEXT"},
+        {"name": "route_id", "type": "TEXT"},
+        {"name": "load_date", "type": "DATE"},
+        {"name": "load_type", "type": "TEXT"},
+        {"name": "weight_lbs", "type": "NUMERIC"},
+        {"name": "pieces", "type": "INTEGER"},
+        {"name": "revenue", "type": "NUMERIC"},
+        {"name": "fuel_surcharge", "type": "NUMERIC"},
+        {"name": "accessorial_charges", "type": "NUMERIC"},
+        {"name": "load_status", "type": "TEXT"},
+        {"name": "booking_type", "type": "TEXT"}
+      ],
+      "primary_key": ["load_id"]
+    },
+    "maintenance_records": {
+      "columns": [
+        {"name": "maintenance_id", "type": "TEXT"},
+        {"name": "truck_id", "type": "TEXT"},
+        {"name": "maintenance_date", "type": "DATE"},
+        {"name": "maintenance_type", "type": "TEXT"},
+        {"name": "odometer_reading", "type": "NUMERIC"},
+        {"name": "labor_hours", "type": "NUMERIC"},
+        {"name": "labor_cost", "type": "NUMERIC"},
+        {"name": "parts_cost", "type": "NUMERIC"},
+        {"name": "total_cost", "type": "NUMERIC"},
+        {"name": "facility_location", "type": "TEXT"},
+        {"name": "downtime_hours", "type": "NUMERIC"},
+        {"name": "service_description", "type": "TEXT"}
+      ],
+      "primary_key": ["maintenance_id"]
+    },
+    "routes": {
+      "columns": [
+        {"name": "route_id", "type": "TEXT"},
+        {"name": "origin_city", "type": "TEXT"},
+        {"name": "origin_state", "type": "TEXT"},
+        {"name": "destination_city", "type": "TEXT"},
+        {"name": "destination_state", "type": "TEXT"},
+        {"name": "typical_distance_miles", "type": "NUMERIC"},
+        {"name": "base_rate_per_mile", "type": "NUMERIC"},
+        {"name": "fuel_surcharge_rate", "type": "NUMERIC"},
+        {"name": "typical_transit_days", "type": "NUMERIC"}
+      ],
+      "primary_key": ["route_id"]
+    },
+    "safety_incidents": {
+      "columns": [
+        {"name": "incident_id", "type": "TEXT"},
+        {"name": "trip_id", "type": "TEXT"},
+        {"name": "truck_id", "type": "TEXT"},
+        {"name": "driver_id", "type": "TEXT"},
+        {"name": "incident_date", "type": "DATE"},
+        {"name": "incident_type", "type": "TEXT"},
+        {"name": "location_city", "type": "TEXT"},
+        {"name": "location_state", "type": "TEXT"},
+        {"name": "at_fault_flag", "type": "BOOLEAN"},
+        {"name": "injury_flag", "type": "BOOLEAN"},
+        {"name": "vehicle_damage_cost", "type": "NUMERIC"},
+        {"name": "cargo_damage_cost", "type": "NUMERIC"},
+        {"name": "claim_amount", "type": "NUMERIC"},
+        {"name": "preventable_flag", "type": "BOOLEAN"},
+        {"name": "description", "type": "TEXT"}
+      ],
+      "primary_key": ["incident_id"]
+    },
+    "trailers": {
+      "columns": [
+        {"name": "trailer_id", "type": "TEXT"},
+        {"name": "trailer_number", "type": "TEXT"},
+        {"name": "trailer_type", "type": "TEXT"},
+        {"name": "length_feet", "type": "NUMERIC"},
+        {"name": "model_year", "type": "INTEGER"},
+        {"name": "vin", "type": "TEXT"},
+        {"name": "acquisition_date", "type": "DATE"},
+        {"name": "status", "type": "TEXT"},
+        {"name": "current_location", "type": "TEXT"}
+      ],
+      "primary_key": ["trailer_id"]
+    },
+    "trips": {
+      "columns": [
+        {"name": "trip_id", "type": "TEXT"},
+        {"name": "load_id", "type": "TEXT"},
+        {"name": "driver_id", "type": "TEXT"},
+        {"name": "truck_id", "type": "TEXT"},
+        {"name": "trailer_id", "type": "TEXT"},
+        {"name": "dispatch_date", "type": "DATE"},
+        {"name": "actual_distance_miles", "type": "NUMERIC"},
+        {"name": "actual_duration_hours", "type": "NUMERIC"},
+        {"name": "fuel_gallons_used", "type": "NUMERIC"},
+        {"name": "average_mpg", "type": "NUMERIC"},
+        {"name": "idle_time_hours", "type": "NUMERIC"},
+        {"name": "trip_status", "type": "TEXT"}
+      ],
+      "primary_key": ["trip_id"]
+    },
+    "truck_utilization_metrics": {
+      "columns": [
+        {"name": "truck_id", "type": "TEXT"},
+        {"name": "month", "type": "DATE"},
+        {"name": "trips_completed", "type": "INTEGER"},
+        {"name": "total_miles", "type": "NUMERIC"},
+        {"name": "total_revenue", "type": "NUMERIC"},
+        {"name": "average_mpg", "type": "NUMERIC"},
+        {"name": "maintenance_events", "type": "INTEGER"},
+        {"name": "maintenance_cost", "type": "NUMERIC"},
+        {"name": "downtime_hours", "type": "NUMERIC"},
+        {"name": "utilization_rate", "type": "NUMERIC"}
+      ],
+      "primary_key": ["truck_id", "month"]
+    },
+    "trucks": {
+      "columns": [
+        {"name": "truck_id", "type": "TEXT"},
+        {"name": "unit_number", "type": "TEXT"},
+        {"name": "make", "type": "TEXT"},
+        {"name": "model_year", "type": "INTEGER"},
+        {"name": "vin", "type": "TEXT"},
+        {"name": "acquisition_date", "type": "DATE"},
+        {"name": "acquisition_mileage", "type": "NUMERIC"},
+        {"name": "fuel_type", "type": "TEXT"},
+        {"name": "tank_capacity_gallons", "type": "NUMERIC"},
+        {"name": "status", "type": "TEXT"},
+        {"name": "home_terminal", "type": "TEXT"}
+      ],
+      "primary_key": ["truck_id"]
+    }
+  },
+  "relationships": [
+    {"from_table": "loads", "from_columns": ["customer_id"], "to_table": "customers", "to_columns": ["customer_id"], "kind": "hard"},
+    {"from_table": "loads", "from_columns": ["route_id"], "to_table": "routes", "to_columns": ["route_id"], "kind": "hard"},
+    {"from_table": "trips", "from_columns": ["load_id"], "to_table": "loads", "to_columns": ["load_id"], "kind": "hard"},
+    {"from_table": "trips", "from_columns": ["driver_id"], "to_table": "drivers", "to_columns": ["driver_id"], "kind": "hard"},
+    {"from_table": "trips", "from_columns": ["truck_id"], "to_table": "trucks", "to_columns": ["truck_id"], "kind": "hard"},
+    {"from_table": "trips", "from_columns": ["trailer_id"], "to_table": "trailers", "to_columns": ["trailer_id"], "kind": "hard"},
+    {"from_table": "fuel_purchases", "from_columns": ["trip_id"], "to_table": "trips", "to_columns": ["trip_id"], "kind": "hard"},
+    {"from_table": "fuel_purchases", "from_columns": ["truck_id"], "to_table": "trucks", "to_columns": ["truck_id"], "kind": "hard"},
+    {"from_table": "fuel_purchases", "from_columns": ["driver_id"], "to_table": "drivers", "to_columns": ["driver_id"], "kind": "hard"},
+    {"from_table": "maintenance_records", "from_columns": ["truck_id"], "to_table": "trucks", "to_columns": ["truck_id"], "kind": "hard"},
+    {"from_table": "delivery_events", "from_columns": ["load_id"], "to_table": "loads", "to_columns": ["load_id"], "kind": "hard"},
+    {"from_table": "delivery_events", "from_columns": ["trip_id"], "to_table": "trips", "to_columns": ["trip_id"], "kind": "hard"},
+    {"from_table": "delivery_events", "from_columns": ["facility_id"], "to_table": "facilities", "to_columns": ["facility_id"], "kind": "hard"},
+    {"from_table": "safety_incidents", "from_columns": ["trip_id"], "to_table": "trips", "to_columns": ["trip_id"], "kind": "hard"},
+    {"from_table": "safety_incidents", "from_columns": ["truck_id"], "to_table": "trucks", "to_columns": ["truck_id"], "kind": "hard"},
+    {"from_table": "safety_incidents", "from_columns": ["driver_id"], "to_table": "drivers", "to_columns": ["driver_id"], "kind": "hard"},
+    {"from_table": "driver_monthly_metrics", "from_columns": ["driver_id"], "to_table": "drivers", "to_columns": ["driver_id"], "kind": "hard"},
+    {"from_table": "truck_utilization_metrics", "from_columns": ["truck_id"], "to_table": "trucks", "to_columns": ["truck_id"], "kind": "hard"}
+  ],
+  "packs": {
+    "loads-customers-routes": {"tier": "small", "tables": ["loads", "customers", "routes"], "purpose": "Cargas, clientes e rotas contratadas."},
+    "trips-loads-drivers": {"tier": "small", "tables": ["trips", "loads", "drivers"], "purpose": "Viagens, cargas e motoristas."},
+    "trips-fleet": {"tier": "small", "tables": ["trips", "trucks", "trailers"], "purpose": "Viagens e equipamentos utilizados."},
+    "maintenance-trucks": {"tier": "small", "tables": ["maintenance_records", "trucks"], "purpose": "Manutenção e indisponibilidade por caminhão."},
+    "driver-monthly": {"tier": "small", "tables": ["driver_monthly_metrics", "drivers"], "purpose": "Indicadores mensais por motorista."},
+    "truck-monthly": {"tier": "small", "tables": ["truck_utilization_metrics", "trucks"], "purpose": "Utilização mensal por caminhão."},
+    "fuel-efficiency": {"tier": "medium", "tables": ["fuel_purchases", "trips", "trucks", "drivers"], "purpose": "Custos e eficiência de combustível por viagem, veículo e motorista."},
+    "delivery-performance": {"tier": "medium", "tables": ["delivery_events", "trips", "loads", "facilities", "routes"], "purpose": "Pontualidade, detenção e desempenho de entrega."},
+    "safety-performance": {"tier": "medium", "tables": ["safety_incidents", "trips", "drivers", "trucks", "loads"], "purpose": "Incidentes e desempenho operacional relacionado."},
+    "operations-end-to-end": {"tier": "heavy", "tables": ["customers", "routes", "loads", "trips", "drivers", "trucks", "fuel_purchases", "delivery_events"], "purpose": "Rentabilidade e desempenho ponta a ponta da operação."},
+    "fleet-risk-profitability": {"tier": "heavy", "tables": ["loads", "trips", "drivers", "trucks", "fuel_purchases", "maintenance_records", "safety_incidents", "truck_utilization_metrics"], "purpose": "Risco, custo, manutenção e rentabilidade da frota."}
+  }
+}
