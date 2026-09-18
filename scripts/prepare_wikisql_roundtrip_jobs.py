@@ -13,6 +13,7 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
+from llm_to_sql.agentic.model_author import AUTHOR_PROMPT_ID, build_author_messages
 from llm_to_sql.creative_questions import validate_writer_candidates
 
 
@@ -34,7 +35,6 @@ def main() -> None:
         raise SystemExit(f"Saída já existe: {arguments.output}")
     jobs = {str(record["id"]): record for record in _read(arguments.writer_jobs)}
     responses = {str(record["id"]): record for record in _read(arguments.writer_responses)}
-    sql_prompt = json.loads((ROOT / "configs" / "prompts" / "sql-author-schema-fk-v1.json").read_text(encoding="utf-8"))
     output: list[dict[str, object]] = []
     rejections: list[dict[str, object]] = []
     for identifier, job in jobs.items():
@@ -69,13 +69,6 @@ def main() -> None:
             continue
         for candidate in candidates:
             candidate_id = f"{identifier}:{candidate.identifier}"
-            user = (
-                "<dialeto>\nsqlite\n</dialeto>\n\n<schema_e_relacionamentos>\n"
-                + str(job["schema"])
-                + "\n</schema_e_relacionamentos>\n\n<pergunta>\n"
-                + candidate.question
-                + "\n</pergunta>\n\nRetorne somente uma consulta SQL de leitura."
-            )
             output.append(
                 {
                     "id": candidate_id,
@@ -88,10 +81,8 @@ def main() -> None:
                     "schema": job["schema"],
                     "reference_sql": job["reference_sql"],
                     "semantic_brief": job["semantic_brief"],
-                    "messages": [
-                        {"role": "system", "content": sql_prompt["system"]},
-                        {"role": "user", "content": user},
-                    ],
+                    "prompt_id": AUTHOR_PROMPT_ID,
+                    "messages": build_author_messages(candidate.question, str(job["schema"])),
                 }
             )
     arguments.output.parent.mkdir(parents=True, exist_ok=True)

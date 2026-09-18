@@ -18,6 +18,8 @@ O redator e o crítico usam `Qwen/Qwen3-4B-Instruct-2507`, variante oficial não
 
 O contrato do redator é aplicado por candidato. Variantes inválidas são registradas individualmente e descartadas; um item só segue se conservar pelo menos duas perguntas válidas para comparação. Isso evita perder três boas variantes por um único erro de pontuação ou de literal sem relaxar nenhum gate semântico.
 
+O retorno pergunta-para-SQL reutiliza literalmente o contrato `phase-01-general-v1` do treino (`<schema>` e `<pergunta>`). Acrescentar wrappers de dialeto ou trocar o system prompt invalida a comparabilidade com o benchmark geral e é proibido neste estágio.
+
 ## Escala inicial
 
 A primeira execução seleciona deterministicamente 8.000 itens:

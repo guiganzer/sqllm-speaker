@@ -11,6 +11,8 @@ class ModelAuthorTests(unittest.TestCase):
         self.assertIn("somente", messages[0]["content"].lower())
         self.assertIn("<schema>", messages[1]["content"])
         self.assertIn("Quantos filmes", messages[1]["content"])
+        self.assertIn("</schema>\n\n<pergunta>", messages[1]["content"])
+        self.assertNotIn("<dialeto>", messages[1]["content"])
 
     def test_repair_prompt_includes_sql_and_sanitized_error(self) -> None:
         message = build_author_messages(

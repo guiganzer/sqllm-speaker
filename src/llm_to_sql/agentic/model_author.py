@@ -9,6 +9,11 @@ from llm_to_sql.evaluation import normalize_model_output
 
 DEFAULT_MODEL_ID = "Qwen/Qwen3-4B-Thinking-2507"
 DEFAULT_MODEL_REVISION = "768f209d9ea81521153ed38c47d515654e938aea"
+AUTHOR_PROMPT_ID = "phase-01-general-v1"
+AUTHOR_SYSTEM_PROMPT = (
+    "Você é um assistente especializado em SQL. Gere somente uma consulta SQL "
+    "compatível com o schema fornecido. Não explique a resposta."
+)
 
 
 def build_author_messages(
@@ -23,8 +28,8 @@ def build_author_messages(
         raise ValueError("A pergunta não pode estar vazia.")
     if not schema_ddl.strip():
         raise ValueError("O schema não pode estar vazio.")
-    system = "Você é um assistente especializado em SQL. Gere somente uma consulta SQL compatível com o schema fornecido. Não explique a resposta."
-    user = f"<schema>\n{schema_ddl}\n</schema>\n<pergunta>\n{question.strip()}\n</pergunta>"
+    system = AUTHOR_SYSTEM_PROMPT
+    user = f"<schema>\n{schema_ddl}\n</schema>\n\n<pergunta>\n{question.strip()}\n</pergunta>"
     if repair_error:
         if not previous_sql or not previous_sql.strip():
             raise ValueError("previous_sql é obrigatório durante reparo.")
