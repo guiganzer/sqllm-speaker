@@ -123,3 +123,8 @@ Os datasets WikiSQL, Olist original e Logistics Operations foram inventariados e
 Foram adicionados catálogos versionados com PKs, FKs e relation packs pequenos, médios e pesados, além do prompt `sql-author-schema-fk-v1` e de um validador SQLite somente leitura. O teste real `orders + order_payments` foi aprovado, e a suíte completa passa com 66/66 testes.
 
 Consulte o [plano das cinco rodadas](docs/plans/public-schema-sql-five-rounds.md), o [manifesto das fontes](docs/data-manifests/public-sql-expansion-2026-09-17.md), o [manifesto Olist](docs/data-manifests/olist-original-2026-09-17.md) e o [runbook de validação](docs/runbooks/schema-fk-sql-validation.md).
+## WikiSQL criativo em estágios
+
+A primeira rodada usa WikiSQL como fonte principal. A geração PT-BR foi dividida em plano semântico determinístico, quatro redações criativas, retorno pergunta-para-SQL com o adapter geral, comparação por execução e crítica final. O redator/crítico usa a variante não pensante `Qwen3-4B-Instruct-2507`; o guardião SQL continua usando o modelo e adapter do projeto. Consulte o [runbook WikiSQL criativo](docs/runbooks/wikisql-creative-pt-pipeline.md).
+
+O smoke do planejador aceitou e executou 15/15 referências. A suíte completa passa com 75/75 testes. O corpus ainda não está liberado para treino: primeiro é necessário executar os jobs de geração, retorno e crítica e registrar o manifesto final.
