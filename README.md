@@ -1,6 +1,6 @@
 # SQLLM Speaker
 
-Assistente local e agentic de **Text-to-SQL em português**. O projeto especializa um modelo aberto para transformar perguntas em português em SQL de leitura, sempre condicionado ao schema atual do Pagila e protegido por validações determinísticas.
+Assistente local e agentic de **Text-to-SQL em português**. O projeto especializa um modelo aberto para transformar perguntas em português em SQL de leitura, condicionado ao subgrafo relevante de cada banco e protegido por validações determinísticas.
 
 > SQL gerado não é autorização de execução. O runtime aceita somente consultas de leitura após validação de sintaxe, referências ao schema e política de segurança.
 
@@ -20,7 +20,7 @@ O *exact match* é deliberadamente rígido: compara a estrutura canônica com a 
 ## Arquitetura agentic
 
 ```text
-Pergunta em português + schema Pagila relevante
+Pergunta em português + relation pack relevante
                 ↓
   Orquestrador → especialista de schema → autor SQL
                 ↓
@@ -31,7 +31,7 @@ Pergunta em português + schema Pagila relevante
 
 A política e as transições são código determinístico. O runtime Pagila obtém perfil e múltiplos schemas, bloqueia escrita, limita tempo/linhas e executa com a conta `sqllm_readonly`. Consulte a [sessão agentic](docs/runbooks/pagila-agentic-session.md).
 
-## Próxima etapa: experimento público Pagila
+## Experimento público Pagila
 
 O Pagila está carregado localmente em PostgreSQL 18 e validado com 23 tabelas, 1.000 filmes descritivos e 16.044 locações. Consulte o [manifesto](docs/data-manifests/pagila-v18-fc7a867.md), o [runtime local](docs/runbooks/pagila-local-runtime.md), a [avaliação pública](docs/runbooks/pagila-public-evaluation.md) e o [estudo de candidatos](docs/research/public-descriptive-databases.md).
 
@@ -41,12 +41,14 @@ A qualidade pré-especialização foi congelada e repetida no [benchmark do auto
 
 A validação externa de terceiros foi adicionada em [external-sakila-validation.md](docs/runbooks/external-sakila-validation.md): os 30 gabaritos MIT do Sakila foram transpostos de MySQL para PostgreSQL/Pagila e todos executaram sob a conta somente leitura. Ela é bloqueada para treino e não substitui a métrica PT-BR do Pagila.
 
+A v3 foi treinada e avaliada. O ganho especializado veio acompanhado de regressão geral, então ela permanece como candidata Pagila e não substitui o adapter universal.
+
 Próximas ações, nesta ordem:
 
-1. Executar o smoke da v3 continuando o adapter v2.
-2. Treinar por duas épocas com taxa de aprendizado reduzida.
-3. Repetir as 24 perguntas congeladas sob o contrato básico de candidato único.
-4. Comparar resultado executado e componentes SQL com a linha de base v2.
+1. Ingerir Olist e Logistics em PostgreSQL local reproduzível.
+2. Normalizar WikiSQL com parser seguro, sem `eval`.
+3. Produzir e validar especificações PT-BR na proporção 60% small, 25% medium e 15% heavy.
+4. Congelar holdouts antes de iniciar as cinco rodadas de treino.
 
 ## Retomada rápida
 
@@ -114,3 +116,10 @@ O adapter v3 concluiu duas épocas e 198 passos com perda final de validação 0
 ## Avaliação v3: ganho especializado, regressão geral
 
 A v3 melhorou o Pagila: 24/24 em parse/escopo, 22/24 executadas e 8/24 resultados idênticos, contra 5/24 na v2. Porém, no benchmark geral de 512 schemas, conformidade ao schema caiu de 98,05% para 88,67% e exact match de 64,06% para 46,09%. Por isso, a v3 não foi promovida como adapter universal. A próxima iteração deve introduzir replay geral estratificado e atacar joins/projeções restantes. Veja a [avaliação completa](docs/experiment-manifests/phase-03-pagila-v3-evaluation-2026-09-16.md).
+## Expansão pública multi-schema
+
+Os datasets WikiSQL, Olist original e Logistics Operations foram inventariados em `data/raw/`. O Olist original com nove CSVs é a fonte canônica; a cópia SQLite é apenas um espelho de execução. O funil de marketing fica separado até possuir manifesto próprio.
+
+Foram adicionados catálogos versionados com PKs, FKs e relation packs pequenos, médios e pesados, além do prompt `sql-author-schema-fk-v1` e de um validador SQLite somente leitura. O teste real `orders + order_payments` foi aprovado, e a suíte completa passa com 66/66 testes.
+
+Consulte o [plano das cinco rodadas](docs/plans/public-schema-sql-five-rounds.md), o [manifesto das fontes](docs/data-manifests/public-sql-expansion-2026-09-17.md), o [manifesto Olist](docs/data-manifests/olist-original-2026-09-17.md) e o [runbook de validação](docs/runbooks/schema-fk-sql-validation.md).
