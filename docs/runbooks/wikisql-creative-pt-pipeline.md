@@ -14,7 +14,7 @@ WikiSQL estruturado
   → corpus final mantém a SQL original validada
 ```
 
-O redator e o crítico usam `Qwen/Qwen3-4B-Instruct-2507`, variante oficial não pensante, fixada na revisão `e7974da369bd887ad4f10a072ec4f933ac5391bf`. O teste de retorno usa o modelo Thinking com o adapter geral aprovado da fase 1. Assim, o mesmo modelo não inventa a pergunta e aprova sozinho sua própria invenção.
+O redator e o crítico usam `Qwen/Qwen3-4B-Instruct-2507`, variante oficial não pensante, fixada na revisão `cdbee75f17c01a7cc42f958dc650907174af0554`. O teste de retorno usa o modelo Thinking com o adapter geral aprovado da fase 1. Assim, o mesmo modelo não inventa a pergunta e aprova sozinho sua própria invenção.
 
 ## Escala inicial
 

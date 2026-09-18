@@ -15,7 +15,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 
 
 BASE_MODEL_ID = "Qwen/Qwen3-4B-Instruct-2507"
-BASE_MODEL_REVISION = "e7974da369bd887ad4f10a072ec4f933ac5391bf"
+BASE_MODEL_REVISION = "cdbee75f17c01a7cc42f958dc650907174af0554"
 
 
 def parse_arguments() -> argparse.Namespace:
