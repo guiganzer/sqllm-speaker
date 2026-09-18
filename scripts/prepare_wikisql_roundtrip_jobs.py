@@ -13,7 +13,7 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from llm_to_sql.creative_questions import validate_writer_response
+from llm_to_sql.creative_questions import validate_writer_candidates
 
 
 def parse_arguments() -> argparse.Namespace:
@@ -42,9 +42,30 @@ def main() -> None:
         if response is None:
             continue
         try:
-            candidates = validate_writer_response(str(response["response"]), dict(job["semantic_brief"]))
+            candidates, candidate_rejections = validate_writer_candidates(
+                str(response["response"]), dict(job["semantic_brief"])
+            )
         except ValueError as error:
             rejections.append({"id": identifier, "stage": "writer_contract", "error": str(error)})
+            continue
+        for rejection in candidate_rejections:
+            rejections.append(
+                {
+                    "id": identifier,
+                    "candidate_id": rejection.identifier,
+                    "style": rejection.style,
+                    "stage": "writer_candidate_contract",
+                    "error": rejection.error,
+                }
+            )
+        if len(candidates) < 2:
+            rejections.append(
+                {
+                    "id": identifier,
+                    "stage": "writer_contract",
+                    "error": "Menos de dois candidatos válidos para comparação crítica.",
+                }
+            )
             continue
         for candidate in candidates:
             candidate_id = f"{identifier}:{candidate.identifier}"
@@ -87,7 +108,8 @@ def main() -> None:
                 "writer_jobs": len(jobs),
                 "writer_responses": len(responses),
                 "roundtrip_jobs": len(output),
-                "writer_rejections": len(rejections),
+                "writer_rejections": len({record["id"] for record in rejections if record["stage"] == "writer_contract"}),
+                "candidate_rejections": sum(record["stage"] == "writer_candidate_contract" for record in rejections),
                 "missing_responses": len(set(jobs) - set(responses)),
                 "rejections": str(rejection_path),
             },

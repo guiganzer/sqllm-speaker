@@ -21,6 +21,13 @@ class QuestionCandidate:
     question: str
 
 
+@dataclass(frozen=True)
+class CandidateRejection:
+    identifier: str
+    style: str
+    error: str
+
+
 def parse_json_response(response: str) -> dict[str, Any]:
     normalized = normalize_model_output(response).strip()
     normalized = re.sub(r"^```(?:json)?\s*", "", normalized, flags=re.IGNORECASE)
@@ -35,11 +42,22 @@ def parse_json_response(response: str) -> dict[str, Any]:
 
 
 def validate_writer_response(response: str, semantic_brief: dict[str, Any]) -> tuple[QuestionCandidate, ...]:
+    candidates, rejections = validate_writer_candidates(response, semantic_brief)
+    if rejections:
+        raise ValueError(rejections[0].error)
+    return candidates
+
+
+def validate_writer_candidates(
+    response: str,
+    semantic_brief: dict[str, Any],
+) -> tuple[tuple[QuestionCandidate, ...], tuple[CandidateRejection, ...]]:
     payload = parse_json_response(response)
     raw_candidates = payload.get("candidates")
     if not isinstance(raw_candidates, list) or len(raw_candidates) != len(EXPECTED_STYLES):
         raise ValueError("O writer deve retornar exatamente quatro candidatos.")
     candidates: list[QuestionCandidate] = []
+    rejections: list[CandidateRejection] = []
     identifiers: set[str] = set()
     styles: set[str] = set()
     literal_values = [str(value) for value in semantic_brief.get("literal_values", ()) if value is not None]
@@ -53,20 +71,27 @@ def validate_writer_response(response: str, semantic_brief: dict[str, Any]) -> t
             raise ValueError("IDs de candidatos devem ser únicos e não vazios.")
         if style not in EXPECTED_STYLES or style in styles:
             raise ValueError("Os quatro estilos obrigatórios devem aparecer uma vez.")
-        if len(question) < 12 or len(question) > 320 or not question.endswith("?"):
-            raise ValueError("Pergunta deve ser natural, limitada e terminar com interrogação.")
-        if _TECHNICAL.search(question):
-            raise ValueError("Pergunta expõe vocabulário técnico proibido.")
-        folded = question.casefold()
-        for literal in literal_values:
-            if literal.casefold() not in folded:
-                raise ValueError(f"Pergunta não preserva o literal obrigatório: {literal}")
-        _validate_aggregation_language(question, str(semantic_brief.get("aggregation", "none")))
         identifiers.add(identifier)
         styles.add(style)
-        candidates.append(QuestionCandidate(identifier, style, question))
-    return tuple(candidates)
+        try:
+            _validate_candidate_question(question, literal_values, str(semantic_brief.get("aggregation", "none")))
+        except ValueError as error:
+            rejections.append(CandidateRejection(identifier, style, str(error)))
+        else:
+            candidates.append(QuestionCandidate(identifier, style, question))
+    return tuple(candidates), tuple(rejections)
 
+
+def _validate_candidate_question(question: str, literal_values: list[str], aggregation: str) -> None:
+    if len(question) < 12 or len(question) > 320 or not question.endswith("?"):
+        raise ValueError("Pergunta deve ser natural, limitada e terminar com interrogação.")
+    if _TECHNICAL.search(question):
+        raise ValueError("Pergunta expõe vocabulário técnico proibido.")
+    folded = question.casefold()
+    for literal in literal_values:
+        if literal.casefold() not in folded:
+            raise ValueError(f"Pergunta não preserva o literal obrigatório: {literal}")
+    _validate_aggregation_language(question, aggregation)
 
 def validate_critic_response(response: str, allowed_ids: set[str]) -> dict[str, Any]:
     payload = parse_json_response(response)

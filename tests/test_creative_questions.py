@@ -1,7 +1,11 @@
 import json
 import unittest
 
-from llm_to_sql.creative_questions import validate_critic_response, validate_writer_response
+from llm_to_sql.creative_questions import (
+    validate_critic_response,
+    validate_writer_candidates,
+    validate_writer_response,
+)
 
 
 class CreativeQuestionContractTests(unittest.TestCase):
@@ -45,6 +49,11 @@ class CreativeQuestionContractTests(unittest.TestCase):
         )
         with self.assertRaises(ValueError):
             validate_writer_response(response, self.brief)
+
+        candidates, rejections = validate_writer_candidates(response, self.brief)
+        self.assertEqual(len(candidates), 3)
+        self.assertEqual(rejections[0].identifier, "c4")
+        self.assertIn("literal obrigatório", rejections[0].error)
 
     def test_critic_can_only_select_roundtrip_approved_candidate(self) -> None:
         response = json.dumps(

@@ -16,6 +16,8 @@ WikiSQL estruturado
 
 O redator e o crítico usam `Qwen/Qwen3-4B-Instruct-2507`, variante oficial não pensante, fixada na revisão `cdbee75f17c01a7cc42f958dc650907174af0554`. O teste de retorno usa o modelo Thinking com o adapter geral aprovado da fase 1. Assim, o mesmo modelo não inventa a pergunta e aprova sozinho sua própria invenção.
 
+O contrato do redator é aplicado por candidato. Variantes inválidas são registradas individualmente e descartadas; um item só segue se conservar pelo menos duas perguntas válidas para comparação. Isso evita perder três boas variantes por um único erro de pontuação ou de literal sem relaxar nenhum gate semântico.
+
 ## Escala inicial
 
 A primeira execução seleciona deterministicamente 8.000 itens:
