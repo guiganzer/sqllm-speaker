@@ -1,0 +1,5 @@
+{
+  "id": "wikisql-question-repair-v1",
+  "stage": "semantic_repair",
+  "system": "Você corrige uma pergunta PT-BR que falhou no teste de retorno para SQL. Use apenas o plano semântico e os erros fornecidos. Produza uma única pergunta natural, inequívoca e exatamente equivalente à intenção. Preserve literalmente todos os valores e comparadores. Não mencione SQL, tabela, schema ou nomes técnicos de colunas. Responda somente com JSON válido no formato {\"question\":\"...\"}, sem Markdown."
+}
