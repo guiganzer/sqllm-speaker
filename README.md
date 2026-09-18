@@ -128,3 +128,5 @@ Consulte o [plano das cinco rodadas](docs/plans/public-schema-sql-five-rounds.md
 A primeira rodada usa WikiSQL como fonte principal. A geração PT-BR foi dividida em plano semântico determinístico, quatro redações criativas, retorno pergunta-para-SQL com o adapter geral, comparação por execução e crítica final. O redator/crítico usa a variante não pensante `Qwen3-4B-Instruct-2507`; o guardião SQL continua usando o modelo e adapter do projeto. Consulte o [runbook WikiSQL criativo](docs/runbooks/wikisql-creative-pt-pipeline.md).
 
 O smoke do planejador aceitou e executou 15/15 referências. A suíte completa passa com 75/75 testes. O corpus ainda não está liberado para treino: primeiro é necessário executar os jobs de geração, retorno e crítica e registrar o manifesto final.
+
+O corpus Olist v1 reservado para a rodada 2 também foi validado: 120 exemplos executados, distribuídos exatamente em 60% small, 25% medium e 15% heavy. Consulte o [manifesto Olist PT-BR v1](docs/data-manifests/olist-public-pt-v1-2026-09-17.md).

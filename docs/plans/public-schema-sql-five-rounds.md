@@ -94,7 +94,7 @@ O benchmark geral congelado de 512 schemas permanece como gate de regressão. O 
 | 5 | Criar validador read-only executável no SQLite Olist | Concluída |
 | 6 | Criar ingestão reproduzível dos CSVs em PostgreSQL dedicado | Pendente |
 | 7 | Criar parser seguro e pipeline criativo WikiSQL sem `eval` | Implementado; corpus oficial pendente |
-| 8 | Criar especificações PT-BR e SQLs de referência na proporção 60/25/15 | Pendente |
+| 8 | Criar especificações PT-BR e SQLs de referência na proporção 60/25/15 | Olist v1 concluído; Logistics pendente |
 | 9 | Validar em lote e gravar hashes/fingerprints dos resultados | Pendente |
 | 10 | Congelar holdouts Olist e Logistics antes do treino | Pendente |
 | 11 | Medir o prompt v1 sem novo treino | Pendente |

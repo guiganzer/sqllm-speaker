@@ -157,3 +157,5 @@ WikiSQL permanece como fonte principal da primeira rodada. Para evitar traduçõ
 O redator e o crítico usam `Qwen/Qwen3-4B-Instruct-2507` não pensante, revisão `e7974da369bd887ad4f10a072ec4f933ac5391bf`. O retorno usa `Qwen/Qwen3-4B-Thinking-2507` com `phase-01-general-e1-768f209d9ea8`. A amostra inicial planejada é de 6.000 itens de treino, 1.000 de validação e 1.000 de teste, selecionados por hash estável. O runner grava um item por vez e retoma por ID.
 
 O smoke do planejador validou 15/15 referências. Um teste deliberado com resposta Thinking truncada foi rejeitado e registrado, confirmando que saída sem JSON não avança. A suíte completa possui 75 testes aprovados. Nenhum treino deve começar até o corpus final ter 100% de `training_ready`, separação de splits, hashes, retorno aprovado e replay geral. Operação: `docs/runbooks/wikisql-creative-pt-pipeline.md`.
+
+O corpus Olist reservado para a rodada 2 foi gerado e validado separadamente: 120 exemplos PT-BR, sendo 72 small, 30 medium e 18 heavy; 89 ficaram em treino e 31 em validação por famílias. Ele não entra na rodada WikiSQL. Manifesto: docs/data-manifests/olist-public-pt-v1-2026-09-17.md.
